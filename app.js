@@ -899,9 +899,23 @@ class AppController {
         document.getElementById('camera-error-msg').style.display = 'none';
         
         const video = document.getElementById('webcam-preview');
+        const videoContainer = document.getElementById('camera-video-container');
+        const snapBtn = document.getElementById('btn-snap-photo');
+        const fallbackBtn = document.getElementById('camera-fallback-btn');
+        const instructions = document.getElementById('camera-instructions-lbl');
+
+        // Reset visibility to default webcam mode
+        videoContainer.style.display = 'block';
+        snapBtn.style.display = 'block';
+        fallbackBtn.style.display = 'none';
+        instructions.innerText = "Enfoque el pallet (o use su cámara de pruebas) y presione el botón de captura.";
+
         document.getElementById('modal-camera-capture').style.display = 'flex';
 
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // Check if webcam API is available (only in secure contexts like localhost/https or on non-restricted browsers)
+        const isSecureContext = window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && isSecureContext) {
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                 .then(stream => {
                     this.state.webcamStream = stream;
@@ -911,19 +925,21 @@ class AppController {
                 .catch(err => {
                     console.error("Error accessing webcam", err);
                     document.getElementById('camera-error-msg').style.display = 'block';
-                    document.getElementById('camera-error-msg').innerText = "No se pudo acceder a la cámara. Iniciando simulación automática...";
-                    setTimeout(() => {
-                        this.stopCamera();
-                        this.simulateCapture(face);
-                    }, 1500);
+                    document.getElementById('camera-error-msg').innerText = "Acceso a la cámara denegado o no disponible. Use la cámara del dispositivo de abajo.";
+                    
+                    videoContainer.style.display = 'none';
+                    snapBtn.style.display = 'none';
+                    fallbackBtn.style.display = 'block';
                 });
         } else {
+            // Context is insecure (e.g. file:// protocol). Show uploader fallback directly.
             document.getElementById('camera-error-msg').style.display = 'block';
-            document.getElementById('camera-error-msg').innerText = "Cámara no soportada. Iniciando simulación...";
-            setTimeout(() => {
-                this.stopCamera();
-                this.simulateCapture(face);
-            }, 1500);
+            document.getElementById('camera-error-msg').innerText = "Cámara en vivo bloqueada por seguridad del navegador (protocolo local file://). Presione el botón de abajo para activar su cámara nativa o cargar una foto.";
+            
+            videoContainer.style.display = 'none';
+            snapBtn.style.display = 'none';
+            fallbackBtn.style.display = 'block';
+            instructions.innerText = "Seleccione un archivo de imagen o tome una foto usando su cámara nativa.";
         }
     }
 
@@ -998,6 +1014,63 @@ class AppController {
         if (Object.values(this.state.capturedFaces).every(v => v === true)) {
             this.evaluateCuadratura();
         }
+    }
+
+    handleCameraFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        const face = this.state.cameraActiveFace;
+
+        reader.onload = (e) => {
+            const dataUrl = e.target.result;
+
+            if (!this.state.capturedPhotos) {
+                this.state.capturedPhotos = {};
+            }
+            this.state.capturedPhotos[face] = dataUrl;
+            this.state.capturedFaces[face] = true;
+
+            const label = document.getElementById(`cap-label-${face}`);
+            if (label) {
+                label.innerText = `CARA ${face} - Folio: ${this.state.activeFolio}`;
+            }
+
+            const item = document.getElementById(`cap-face-${face}`);
+            if (item) {
+                item.classList.add('done');
+            }
+            
+            const status = document.getElementById(`cap-status-${face}`);
+            if (status) {
+                status.innerText = "Capturado Nativo";
+            }
+
+            const thumb = document.getElementById(`thumb-${face}`);
+            if (thumb) {
+                thumb.innerHTML = `
+                    <img src="${dataUrl}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:1;">
+                    <div class="photo-watermark-overlay" style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; background:rgba(0,0,0,0.3); border-radius: var(--radius-sm); padding: 5px; text-align:center; box-sizing:border-box; position:absolute; top:0; left:0; z-index:2;">
+                        <span style="font-size:0.55rem; font-weight:800; color:#fff; font-family:var(--font-mono); text-shadow:1px 1px 2px #000;">${this.state.activeFolio} - Cara ${face}</span>
+                    </div>
+                `;
+            }
+            
+            this.state.soundManager.playBeep();
+            this.logConsole(`[VISIÓN] Foto NATAL/ARCHIVO capturada para Folio ${this.state.activeFolio} (Cara ${face}).`);
+
+            this.stopCamera();
+
+            // Clear input so selecting same file again triggers change event
+            event.target.value = '';
+
+            if (Object.values(this.state.capturedFaces).every(v => v === true)) {
+                this.evaluateCuadratura();
+            }
+        };
+
+        reader.readAsDataURL(file);
     }
 
     evaluateCuadratura() {

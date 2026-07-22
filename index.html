@@ -1003,8 +1003,8 @@
                 <button class="modal-close-btn" onclick="app.stopCamera()">&times;</button>
             </div>
             <div class="modal-body text-center">
-                <p class="mb-sm text-muted" style="font-size:0.85rem;">Enfoque el pallet (o use su cámara de pruebas) y presione el botón de captura.</p>
-                <div class="video-container" style="background:#0c111e; border: 2px solid var(--color-border); border-radius:var(--radius-md); overflow:hidden; position:relative; width:100%; max-width:440px; height:280px; margin:0 auto;">
+                <p class="mb-sm text-muted" id="camera-instructions-lbl" style="font-size:0.85rem;">Enfoque el pallet (o use su cámara de pruebas) y presione el botón de captura.</p>
+                <div class="video-container" id="camera-video-container" style="background:#0c111e; border: 2px solid var(--color-border); border-radius:var(--radius-md); overflow:hidden; position:relative; width:100%; max-width:440px; height:280px; margin:0 auto;">
                     <video id="webcam-preview" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
                     <!-- Visual frame guide overlay -->
                     <div style="position:absolute; top:10%; bottom:10%; left:10%; right:10%; border:1.5px dashed var(--color-primary); pointer-events:none; opacity:0.6;"></div>
@@ -1012,9 +1012,16 @@
                 <div id="camera-error-msg" class="text-danger mt-sm" style="display:none; font-size:0.8rem; font-weight:700;">
                     No se pudo acceder a la cámara. Asegúrese de dar permisos.
                 </div>
+                
+                <!-- Native Camera / File Input Fallback Button -->
+                <button class="btn btn-primary" id="camera-fallback-btn" onclick="document.getElementById('camera-file-input').click()" style="display:none; width:100%; max-width:440px; margin: 15px auto 0 auto; background-color: var(--color-accent-sag); border-color: var(--color-accent-sag);">
+                    📸 Abrir Cámara del Dispositivo / Cargar Imagen
+                </button>
+                <input type="file" accept="image/*" capture="environment" id="camera-file-input" style="display:none;" onchange="app.handleCameraFileSelect(event)">
+                
                 <div class="mt-md" style="display:flex; justify-content:center; gap:10px;">
                     <button class="btn btn-secondary" onclick="app.stopCamera()">Cancelar</button>
-                    <button class="btn btn-primary" onclick="app.snapPhoto()">
+                    <button class="btn btn-primary" id="btn-snap-photo" onclick="app.snapPhoto()">
                         📸 Capturar Foto
                     </button>
                 </div>
