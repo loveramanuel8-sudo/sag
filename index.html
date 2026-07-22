@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prize Fitosanitario - Inspección SAG</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.0.5">
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <svg class="logo-icon" viewBox="0 0 100 100" width="38" height="38" style="overflow: visible; margin-right: 10px;">
+                    <!-- Orange Fruit body for letter 'e' -->
+                    <circle cx="72" cy="62" r="20" fill="none" stroke="#e65f2b" stroke-width="6" />
+                    <!-- Yellow inner accent -->
+                    <circle cx="72" cy="62" r="15" fill="none" stroke="#f4a261" stroke-width="2.5" />
+                    <!-- Green leaves on top of orange -->
+                    <path d="M72,42 C67,30 57,25 57,25 C57,25 67,35 72,42 Z" fill="#3c8a48" />
+                    <path d="M72,42 C77,30 87,25 87,25 C87,25 77,35 72,42 Z" fill="#3c8a48" />
+                    <!-- Stylized 'e' loop -->
+                    <path d="M62,62 C62,52 82,52 82,62 C82,69 67,72 62,62 Z" fill="none" stroke="#3a7ca5" stroke-width="5" stroke-linecap="round" />
+                    <!-- 'Priz' text letters stylized in path -->
+                    <path d="M12,38 L12,78 M12,53 C22,53 27,38 18,38 C9,38 9,53 12,53" fill="none" stroke="#3a7ca5" stroke-width="5" stroke-linecap="round" />
+                    <path d="M28,53 L28,78" fill="none" stroke="#3a7ca5" stroke-width="5" stroke-linecap="round" />
+                    <circle cx="28" cy="43" r="3.5" fill="#3a7ca5" />
+                    <path d="M38,53 L48,53 L38,78 L48,78" fill="none" stroke="#3a7ca5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="brand-text">
+                    <span class="brand-title">PRIZE</span>
+                    <span class="brand-subtitle">Smart Fitosanitario</span>
+                </div>
+            </div>
+
+            <nav class="nav-steps">
+                <div class="nav-step active" id="btn-step-1" onclick="app.setStep(1)">
+                    <div class="step-num">01</div>
+                    <div class="step-details">
+                        <span class="step-title">Contraparte SAG</span>
+                        <span class="step-desc">Packing List Digital</span>
+                    </div>
+                    <div class="step-status-icon locked" id="lock-step-1"></div>
+                </div>
+
+                <div class="nav-step" id="btn-step-2" onclick="app.setStep(2)">
+                    <div class="step-num">02</div>
+                    <div class="step-details">
+                        <span class="step-title">Tarjador</span>
+                        <span class="step-desc">Pistoleo Folio (10D)</span>
+                    </div>
+                    <div class="step-status-icon locked" id="lock-step-2">🔒</div>
+                </div>
+
+                <div class="nav-step" id="btn-step-3" onclick="app.setStep(3)">
+                    <div class="step-num">03</div>
+                    <div class="step-details">
+                        <span class="step-title">Módulo de Visión</span>
+                        <span class="step-desc">Captura Fotos HD</span>
+                    </div>
+                    <div class="step-status-icon locked" id="lock-step-3">🔒</div>
+                </div>
+
+                <div class="nav-step" id="btn-step-4" onclick="app.setStep(4)">
+                    <div class="step-num">04</div>
+                    <div class="step-details">
+                        <span class="step-title">Motor IA Overlay</span>
+                        <span class="step-desc">Decodificación DM</span>
+                    </div>
+                    <div class="step-status-icon locked" id="lock-step-4">🔒</div>
+                </div>
+
+                <div class="nav-step" id="btn-step-5" onclick="app.setStep(5)">
+                    <div class="step-num">05</div>
+                    <div class="step-details">
+                        <span class="step-title">Tablet Inspector</span>
+                        <span class="step-desc">Selección Táctil</span>
+                    </div>
+                    <div class="step-status-icon locked" id="lock-step-5">🔒</div>
+                </div>
+
+                <div class="nav-step" id="btn-step-6" onclick="app.setStep(6)">
+                    <div class="step-num">06</div>
+                    <div class="step-details">
+                        <span class="step-title">Inspección Física</span>
+                        <span class="step-desc">Validación y Acta</span>
+                    </div>
+                    <div class="step-status-icon locked" id="lock-step-6">🔒</div>
+                </div>
+
+                <div class="nav-step" id="btn-step-7" onclick="app.setStep(7)">
+                    <div class="step-num">📜</div>
+                    <div class="step-details">
+                        <span class="step-title">Historial</span>
+                        <span class="step-desc">Lotes Guardados</span>
+                    </div>
+                    <div class="step-status-icon" id="lock-step-7"></div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-status">
+                    <span class="status-indicator online"></span>
+                    <span>Conexión ERP Activa</span>
+                </div>
+                <div class="audio-control" onclick="app.toggleSound()" id="sound-btn">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                    <span>Audio Habilitado</span>
+                </div>
+                <button class="btn btn-secondary btn-small btn-full mt-sm" onclick="app.resetAll()">
+                    🔄 Limpiar Datos
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Viewport -->
+        <main class="viewport">
+            <header class="main-header">
+                <div class="header-info">
+                    <h1>Módulo de Inspección Fitosanitaria</h1>
+                    <p class="subtitle">Procedimiento SAG Estandarizado para Pallets de Exportación</p>
+                </div>
+                <div class="pallet-meta-badge">
+                    <div class="meta-item">
+                        <span class="meta-label">FOLIO PALLET</span>
+                        <span class="meta-val" id="header-folio">NO ASIGNADO</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">PACKING LIST</span>
+                        <span class="meta-val" id="header-plist">SIN CARGAR</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">ESTADO LOTE</span>
+                        <span class="meta-val status-tag locked" id="header-status">BLOQUEADO</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="view-content-wrapper">
+                <!-- VIEW 1: CONTRAPARTE SAG (PACKING LIST) -->
+                <section class="step-view active" id="view-step-1">
+                    <div style="max-width: 960px; margin: 0 auto;">
+                        <div class="card p-lg">
+                            <div class="card-header">
+                                <span class="badge badge-primary">PASO 1</span>
+                                <h2>Carga del Packing List Digital</h2>
+                            </div>
+                            <p class="description-text">
+                                La Contraparte SAG de la planta debe importar y verificar los datos del Packing List Digital exportado desde el ERP/WMS. Esto autoriza y habilita el lote antes de presentarlo al inspector SAG.
+                            </p>
+                            
+                            <div class="form-group mt-lg">
+                                <label>Seleccionar Planilla de Lote (Simulado)</label>
+                                <select class="custom-select" id="select-packing-list" onchange="app.loadPackingListData(this.value)">
+                                    <option value="">-- Seleccionar Solicitud Fitosanitaria SAG --</option>
+                                    <option value="solicitud_5344">Solicitud SAG Nº 5344 (Cerezas Prize, 21 Pallets, 4128 Cajas)</option>
+                                    <option value="solicitud_5345_error">Solicitud SAG Nº 5345 (Lote con Descuadrado, 18 Pallets, 3248 Cajas)</option>
+                                </select>
+                                <div class="packing-list-preview" id="plist-preview-container" style="display:none; margin-top: 1.5rem;">
+                                    <h3 class="section-divider-title">Detalles de la Solicitud SAG Nº <span id="td-solic-no" class="text-accent font-mono text-bold">--</span></h3>
+                                    
+                                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom: 1.5rem;">
+                                        <table class="data-table" style="width:100%;">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Planta / CSP</th>
+                                                    <td><span id="td-planta" class="text-bold">--</span> / <span id="td-csp" class="font-mono text-bold text-accent">--</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Total Cajas Lote</th>
+                                                    <td id="td-cajas-dec" class="font-mono text-bold">--</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Kilos Netos</th>
+                                                    <td><span id="td-kilos" class="font-mono text-bold text-green">--</span> kg</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Pallets Totales</th>
+                                                    <td id="td-pallets-dec" class="font-mono text-bold">--</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table class="data-table" style="width:100%;">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Destinos Autorizados</th>
+                                                    <td id="td-destinos" style="font-size:0.8rem; font-weight:700;">--</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Fecha Solicitud</th>
+                                                    <td id="td-fecha">--</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Pallets Muestra (SAP)</th>
+                                                    <td id="td-pallets-sap" class="text-warning text-bold font-mono" style="letter-spacing:0.5px;">--</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <h4 class="mt-md mb-xs" style="color:var(--color-primary); border-left:3px solid var(--color-primary); padding-left:8px;">Resumen de Productores en el Lote</h4>
+                                    <div style="max-height: 180px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 1.5rem; background: var(--color-bg-card);">
+                                        <table class="data-table" style="width:100%; border-collapse: collapse; margin-top:0;">
+                                            <thead style="position: sticky; top:0; background: var(--color-bg-card-hover); z-index:2; border-bottom: 2px solid var(--color-border);">
+                                                <tr>
+                                                    <th style="padding:8px; text-align:left; color:var(--color-text-main); font-weight:600; width:120px;">CSG</th>
+                                                    <th style="padding:8px; text-align:left; color:var(--color-text-main); font-weight:600;">Productor</th>
+                                                    <th style="padding:8px; text-align:right; color:var(--color-text-main); font-weight:600; width:120px;">Cajas</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="td-productores-summary-tbody">
+                                                <!-- Injected dynamically by JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <h4 class="mt-md mb-xs" style="color:var(--color-primary); border-left:3px solid var(--color-primary); padding-left:8px;">Verificación de Presencia Física de Pallets (Pistoleo)</h4>
+                                    <div class="form-row mt-xs mb-sm" style="display: flex; gap: 10px; align-items: flex-end; max-width: 700px;">
+                                        <div style="flex: 1;">
+                                            <input type="text" id="input-recepcion-pallet" class="input-big font-mono" placeholder="Pistolee código del pallet (ej: 0040027562) y presione Enter" onkeypress="if(event.key === 'Enter') app.recepcionarPalletFisico()" style="font-size: 0.9rem; padding: 8px 12px; height: 38px;">
+                                        </div>
+                                        <button class="btn btn-primary" onclick="app.recepcionarPalletFisico()" style="font-size:0.85rem; padding:0 16px; height: 38px;">Escanear Folio</button>
+                                        <button class="btn btn-secondary" onclick="app.recepcionarTodosLosPalletsFisicos()" style="font-size:0.85rem; padding:0 16px; height: 38px;">Simular Todo el Lote</button>
+                                    </div>
+
+                                    <h4 class="mt-md mb-xs" style="color:var(--color-primary); border-left:3px solid var(--color-primary); padding-left:8px;">Listado de Pallets del Lote (Seleccione cuáles inspeccionar)</h4>
+                                    <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-top: 0.5rem; background: var(--color-bg-card);">
+                                        <table class="data-table" style="width:100%; border-collapse: collapse;">
+                                            <thead style="position: sticky; top:0; background: var(--color-bg-card); z-index:2; border-bottom: 2px solid var(--color-border);">
+                                                <tr>
+                                                    <th style="padding:8px; text-align:center; width: 60px;">Muestra</th>
+                                                    <th style="padding:8px; text-align:left; width: 50px;">Nº</th>
+                                                    <th style="padding:8px; text-align:left;">Folio Pallet</th>
+                                                    <th style="padding:8px; text-align:left;">Presencia Física</th>
+                                                    <th style="padding:8px; text-align:left;">CSG</th>
+                                                    <th style="padding:8px; text-align:left;">Productor</th>
+                                                    <th style="padding:8px; text-align:right;">Cajas</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="td-pallets-list-tbody">
+                                                <!-- Injected dynamically by JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mt-md" id="plist-boxes-accordion" style="display:none; background: rgba(0,0,0,0.15); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                                <label>Listado de Cajas del Packing List</label>
+                                <div class="boxes-list-scrollable mt-xs" id="plist-boxes-list">
+                                    <!-- Injected dynamically by JS -->
+                                </div>
+                            </div>
+
+                            <div class="actions-footer mt-xl">
+                                <button class="btn btn-secondary" onclick="app.resetAll()">Limpiar Datos</button>
+                                <button class="btn btn-primary" id="btn-approve-plist" onclick="app.approvePackingList()" disabled>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" class="mr-sm">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    Aprobar y Habilitar Proceso
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: TARJADOR (PISTOLEO FOLIO) -->
+                <section class="step-view" id="view-step-2">
+                    <div class="grid-2col">
+                        <div class="card p-lg">
+                            <div class="card-header">
+                                <span class="badge badge-primary">PASO 2</span>
+                                <h2>Pistoleo y Asociación del Folio del Pallet</h2>
+                            </div>
+                            <p class="description-text">
+                                El tarjador o movilizador debe escanear el código de barras de la tarjeta de pallet ubicada en la parte superior del esquinero para verificar su correspondencia con el Packing List autorizado.
+                            </p>
+
+                            <div class="scanner-simulation mt-xl">
+                                <div class="scanner-target">
+                                    <div class="laser-line"></div>
+                                    <div class="barcode-graphic">
+                                        <div class="bar bar-1"></div>
+                                        <div class="bar bar-2"></div>
+                                        <div class="bar bar-3"></div>
+                                        <div class="bar bar-4"></div>
+                                        <div class="bar bar-1"></div>
+                                        <div class="bar bar-3"></div>
+                                        <div class="bar bar-2"></div>
+                                        <div class="bar bar-4"></div>
+                                    </div>
+                                    <span class="scanner-tag">ESCANEAR TARJETA PALLET</span>
+                                </div>
+
+                                <div class="form-group mt-lg">
+                                    <label for="input-barcode">Folio Escaneado (10 Dígitos Números)</label>
+                                    <div class="input-with-action">
+                                        <input type="text" id="input-barcode" class="input-big font-mono" maxlength="10" placeholder="Ej: 1020013265" onkeypress="if(event.key === 'Enter') app.scanFolio()">
+                                        <button class="btn btn-primary" id="btn-scan-folio" onclick="app.scanFolio()">Pistolear</button>
+                                    </div>
+                                    <span class="input-hint">Simule la pistola digitando el número y haciendo clic en Pistolear o presionando Enter.</span>
+                                </div>
+                            </div>
+
+                            <div class="demo-hints mt-lg">
+                                <strong>Folios seleccionados para muestra (Pistoleo Rápido):</strong>
+                                <ul class="hint-list mt-sm" id="step2-dynamic-hints">
+                                    <!-- Injected dynamically by JS -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card p-lg">
+                            <div class="sap-requests-card p-md mb-md" style="background: rgba(241, 196, 15, 0.05); border: 1px dashed rgba(241, 196, 15, 0.3); border-radius: var(--radius-md);">
+                                <h4 class="text-warning">📋 Muestra de Pallets Solicitada por SAP</h4>
+                                <p class="small text-muted mt-xs">SAP analizó el lote de producción y solicita inspeccionar los siguientes folios de pallet específicos:</p>
+                                <ul class="mt-sm" id="sap-requested-folios-list" style="list-style:none; padding-left:0; display:flex; flex-direction:column; gap:6px;">
+                                    <!-- Injected dynamically by JS -->
+                                </ul>
+                            </div>
+
+                            <h3>Estado del Acoplamiento</h3>
+                            <div class="connection-status-card mt-md" id="coupling-card">
+                                <div class="coupling-state text-center py-lg">
+                                    <div class="circle-pulse orange" id="coupling-pulse"></div>
+                                    <h4 class="mt-md" id="coupling-text">Esperando Lectura de Folio Físico</h4>
+                                </div>
+                            </div>
+
+                            <div class="logs-console mt-lg">
+                                <div class="console-header">
+                                    <span>Consola de Terminal Lector</span>
+                                    <button class="console-clear" onclick="app.clearConsole()">Limpiar</button>
+                                </div>
+                                <div class="console-body" id="console-logs">
+                                    <div class="log-line system">[SYS] Terminal inicializada. Esperando Folio de 10 dígitos...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: MODULO DE VISION (CAPTURA FOTOGRAFICA HD) -->
+                <section class="step-view" id="view-step-3">
+                    <div class="card p-lg">
+                        <div class="card-header">
+                            <span class="badge badge-primary">PASO 3</span>
+                            <h2>Captura Fotográfica HD y Cuadratura Automática</h2>
+                        </div>
+                        <p class="description-text">
+                            La cámara de visión artificial captura fotografías en alta resolución de las 4 caras del pallet en el andén de inspección. El motor efectúa el conteo físico de cajas expuestas y lo cruza contra la planilla oficial.
+                        </p>
+
+                        <div class="grid-capture mt-lg">
+                            <!-- Left: Face captures -->
+                            <div class="capture-controls">
+                                <h3>Estación de Cámaras HD</h3>
+                                <div class="face-capture-grid">
+                                    <!-- Cara A -->
+                                    <div class="capture-item" id="cap-face-A">
+                                        <div class="cap-header">
+                                            <span id="cap-label-A">CARA A (Frontal)</span>
+                                            <span class="cap-status" id="cap-status-A">Pendiente</span>
+                                        </div>
+                                        <div class="cap-thumbnail" onclick="app.simulateCapture('A')">
+                                            <div class="cap-overlay">
+                                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                                    <circle cx="12" cy="13" r="4"></circle>
+                                                </svg>
+                                                <span>CAPTURAR CARA A</span>
+                                            </div>
+                                            <div class="face-thumbnail-img" id="thumb-A"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Cara B -->
+                                    <div class="capture-item" id="cap-face-B">
+                                        <div class="cap-header">
+                                            <span id="cap-label-B">CARA B (Lateral)</span>
+                                            <span class="cap-status" id="cap-status-B">Pendiente</span>
+                                        </div>
+                                        <div class="cap-thumbnail" onclick="app.simulateCapture('B')">
+                                            <div class="cap-overlay">
+                                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                                    <circle cx="12" cy="13" r="4"></circle>
+                                                </svg>
+                                                <span>CAPTURAR CARA B</span>
+                                            </div>
+                                            <div class="face-thumbnail-img" id="thumb-B"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Cara C -->
+                                    <div class="capture-item" id="cap-face-C">
+                                        <div class="cap-header">
+                                            <span id="cap-label-C">CARA C (Posterior)</span>
+                                            <span class="cap-status" id="cap-status-C">Pendiente</span>
+                                        </div>
+                                        <div class="cap-thumbnail" onclick="app.simulateCapture('C')">
+                                            <div class="cap-overlay">
+                                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                                    <circle cx="12" cy="13" r="4"></circle>
+                                                </svg>
+                                                <span>CAPTURAR CARA C</span>
+                                            </div>
+                                            <div class="face-thumbnail-img" id="thumb-C"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Cara D -->
+                                    <div class="capture-item" id="cap-face-D">
+                                        <div class="cap-header">
+                                            <span id="cap-label-D">CARA D (Lateral Opuesta)</span>
+                                            <span class="cap-status" id="cap-status-D">Pendiente</span>
+                                        </div>
+                                        <div class="cap-thumbnail" onclick="app.simulateCapture('D')">
+                                            <div class="cap-overlay">
+                                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                                    <circle cx="12" cy="13" r="4"></circle>
+                                                </svg>
+                                                <span>CAPTURAR CARA D</span>
+                                            </div>
+                                            <div class="face-thumbnail-img" id="thumb-D"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-accent btn-full mt-md" onclick="app.simulateAllCaptures()">Auto-Capturar las 4 Caras</button>
+                            </div>
+
+                            <!-- Right: Analysis results and visual representation -->
+                            <div class="capture-analysis card p-md" style="background: var(--color-bg-card);">
+                                <h3>Cuadratura de Visión Artificial</h3>
+                                <div class="vision-results-card mt-md">
+                                    <div class="counter-display">
+                                        <div class="counter-item">
+                                            <span class="cnt-label">TEÓRICO PACKING</span>
+                                            <span class="cnt-number" id="vision-cnt-theoretical">--</span>
+                                        </div>
+                                        <div class="counter-item border-left">
+                                            <span class="cnt-label">CONTEO FÍSICO (IA)</span>
+                                            <span class="cnt-number" id="vision-cnt-physical">--</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="cuadratura-status-message mt-md" id="cuadratura-alert-container">
+                                        <div class="alert-box-neutral" id="cuadratura-alert-box">
+                                            <h4 id="cuadratura-alert-title">Esperando Toma Fotográfica</h4>
+                                            <p id="cuadratura-alert-desc">Inicie la toma de fotos de las 4 caras para efectuar la cuadratura física contra la planilla del ERP.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="error-action-pane mt-md" id="pane-error-cuadratura" style="display:none;">
+                                        <div class="warning-alert-red">
+                                            <strong>ACCIÓN CORRECTIVA OPERATIVA:</strong>
+                                            <p class="mt-xs">El conteo no cuadra con la declaración fitosanitaria de la Contraparte SAG. Se debe revisar la estiba física del pallet o reemitir la planilla ajustada en el ERP.</p>
+                                            <div class="button-row mt-sm">
+                                                <button class="btn btn-small btn-secondary" onclick="app.reemitirERP()">Reemitir Planilla ERP (Ajustar a Conteo)</button>
+                                                <button class="btn btn-small btn-outline-red" onclick="app.reacomodarFisico()">Reacomodar Estiba Física</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="actions-footer mt-xl">
+                                    <button class="btn btn-secondary" onclick="app.resetAll()">Limpiar Datos</button>
+                                    <button class="btn btn-primary" id="btn-goto-step4" onclick="app.goToStep4()" disabled>Proceder a Decodificación e Overlay</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: MOTOR IA & OVERLAY (DECODIFICACIÓN DATA MATRIX) -->
+                <section class="step-view" id="view-step-4">
+                    <div class="grid-2col">
+                        <div class="card p-lg">
+                            <div class="card-header">
+                                <span class="badge badge-primary">PASO 4</span>
+                                <h2>Decodificación de Data Matrix y Capa Digital</h2>
+                            </div>
+                            <p class="description-text">
+                                El motor de visión artificial localiza y decodifica las etiquetas Data Matrix pegadas al costado de cada caja. Proyecta un recuadro inteligente encima de cada caja leída sobre la fotografía HD real.
+                            </p>
+
+                            <div class="model-run-container mt-lg">
+                                <div class="decoding-process-status">
+                                    <div class="scanning-loader" id="overlay-loader" style="display: none;">
+                                        <div class="spinner"></div>
+                                        <span>Procesando imagen con Red Neuronal...</span>
+                                    </div>
+                                    <div class="decoding-summary" id="overlay-stats">
+                                        <div class="stat-badge">
+                                            <span class="st-lbl">Cajas Detectadas</span>
+                                            <span class="st-val text-accent" id="stats-detected">--</span>
+                                        </div>
+                                        <div class="stat-badge">
+                                            <span class="st-lbl">Data Matrix Leídos</span>
+                                            <span class="st-val text-green" id="stats-read">--</span>
+                                        </div>
+                                        <div class="stat-badge">
+                                            <span class="st-lbl">Obstruidos (Zuncho)</span>
+                                            <span class="st-val text-red" id="stats-obstructed">--</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="vision-status-indicator mt-md" id="vision-resolution-alert">
+                                    <div class="info-alert">
+                                        <div class="alert-text">
+                                            <strong>Detección Completada:</strong> Se han mapeado geométricamente todas las cajas. El zuncho verde de tracción horizontal cruza sobre la etiqueta de algunas cajas, impidiendo la lectura automática. Proceda a la Tablet del Inspector para resolver las lecturas manuales asistidas.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="actions-footer mt-xl">
+                                    <button class="btn btn-secondary" onclick="app.resetAll()">Limpiar Datos</button>
+                                    <button class="btn btn-primary" id="btn-goto-tablet" onclick="app.goToTablet()" disabled>
+                                        Habilitar Tablet del Inspector SAG
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="ml-sm">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card p-lg text-center">
+                            <h3>Visualización Técnica del Mapeo</h3>
+                            <p class="small text-muted mb-md">Capa geométrica de cajas (Nivel x Cara x Columna)</p>
+                            
+                            <div class="overlay-graphic-demo">
+                                <div class="pallet-diagram-wireframe">
+                                    <!-- Rendered dynamically or standard representation -->
+                                    <div class="wireframe-container" id="wireframe-viz">
+                                        <!-- Wireframe boxes will be injected here by app.js -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 5: TABLET INSPECTOR (SELECCIÓN TÁCTIL) -->
+                <section class="step-view" id="view-step-5">
+                    <div class="tablet-interface-layout">
+                        <!-- Pallet Display Frame -->
+                        <div class="tablet-pallet-frame card p-md">
+                            <div class="pallet-frame-header">
+                                <div class="face-selector-tabs">
+                                    <button class="face-tab active" id="tab-face-A" onclick="app.changeInspectorFace('A')">Cara A (Frontal)</button>
+                                    <button class="face-tab" id="tab-face-B" onclick="app.changeInspectorFace('B')">Cara B (Lateral D)</button>
+                                    <button class="face-tab" id="tab-face-C" onclick="app.changeInspectorFace('C')">Cara C (Posterior)</button>
+                                    <button class="face-tab" id="tab-face-D" onclick="app.changeInspectorFace('D')">Cara D (Lateral I)</button>
+                                </div>
+                                <div class="face-indicator">
+                                    MOSTRANDO: <strong class="text-accent" id="active-inspector-face-lbl">CARA A</strong>
+                                </div>
+                            </div>
+
+                            <!-- PALLET SCREEN OVERLAY CANVAS -->
+                            <div class="tablet-screen-container">
+                                <div class="pallet-photo-overlay-canvas" id="pallet-overlay-canvas">
+                                    <!-- Dynamic layout. An HD pallet image is simulated background. Bounding boxes are drawn over it. -->
+                                    <div class="pallet-image-mockup" id="pallet-image-bg">
+                                        <!-- Visual green zunchos simulation -->
+                                        <div class="zuncho zuncho-1"></div>
+                                        <div class="zuncho zuncho-2"></div>
+                                        <div class="zuncho zuncho-3"></div>
+                                        <div class="zuncho zuncho-4"></div>
+
+                                        <!-- Corner board simulation -->
+                                        <div class="esquinero esquinero-left"></div>
+                                        <div class="esquinero esquinero-right"></div>
+
+                                        <!-- Bounding boxes will be loaded dynamically by JS -->
+                                        <div class="bounding-boxes-grid" id="bounding-boxes-container">
+                                            <!-- Bounding boxes dynamically generated -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="color-legend mt-sm">
+                                <div class="legend-item"><span class="legend-box unselected"></span> Sin Marco: Detectado</div>
+                                <div class="legend-item"><span class="legend-box suggested"></span> Verde: Sugerido SAG</div>
+                                <div class="legend-item"><span class="legend-box selected"></span> Azul: Pinchado/Inspector</div>
+                                <div class="legend-item"><span class="legend-box rejected"></span> Rojo: Rechazo Fitosanitario</div>
+                                <div class="legend-item"><span class="legend-box blocked"></span> Zuncho Cruzado (Línea Verde)</div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar / Inspector Actions Panel -->
+                        <div class="tablet-actions-sidebar card p-md">
+                            <div class="inspector-badge-panel">
+                                <span class="inspector-badge">TABLET DE INSPECTOR SAG</span>
+                                <p class="small text-muted mt-xs">Seleccione cajas tocando la pantalla sobre la foto.</p>
+                            </div>
+
+                            <!-- Info Box details of Selected/Tapped Box -->
+                            <div class="inspector-selection-details-card mt-md">
+                                <h3>Caja Seleccionada</h3>
+                                <div class="selection-data-container mt-sm" id="selection-details-data">
+                                    <div class="empty-selection-msg">
+                                        <span>Toque una caja en el pallet de la izquierda para ver su trazabilidad o programar muestra.</span>
+                                    </div>
+                                    <!-- Rendered dynamically when box selected -->
+                                </div>
+                            </div>
+
+                            <!-- Blind Boxes Section -->
+                            <div class="blind-box-selection-card mt-md">
+                                <h3>Muestreo de Cajas Interiores / Ciegas</h3>
+                                <p class="small text-muted">Seleccione una caja ubicada en el centro de la estiba. El sistema indicará el plan de desmontaje eficiente.</p>
+                                
+                                <div class="form-group mt-sm">
+                                    <label>Nivel de la Caja Ciega</label>
+                                    <select class="custom-select" id="select-blind-level" onchange="app.loadBlindBoxesForLevel(this.value)">
+                                        <option value="">-- Seleccionar Nivel --</option>
+                                        <option value="1">Nivel 01 (Base)</option>
+                                        <option value="2">Nivel 02</option>
+                                        <option value="3">Nivel 03</option>
+                                        <option value="4">Nivel 04</option>
+                                        <option value="5">Nivel 05</option>
+                                        <option value="6">Nivel 06</option>
+                                        <option value="7">Nivel 07</option>
+                                        <option value="8">Nivel 08</option>
+                                        <option value="9">Nivel 09</option>
+                                        <option value="10">Nivel 10</option>
+                                        <option value="11">Nivel 11</option>
+                                        <!-- Level 12 does not have blind boxes in this telescopic stowing model -->
+                                    </select>
+                                </div>
+
+                                <div class="blind-boxes-list mt-sm" id="blind-boxes-buttons-container" style="display:none;">
+                                    <label>Cajas Interiores Disponibles:</label>
+                                    <div class="blind-buttons-grid mt-xs" id="blind-buttons-grid">
+                                        <!-- Injected by JS -->
+                                    </div>
+                                </div>
+
+                                <div class="blind-helper-directions mt-md" id="blind-helper-directions" style="display:none;">
+                                    <div class="helper-bubble warning">
+                                        <strong>Guía de Desmontaje para Caja <span id="blind-box-id-lbl">N05-INT1</span>:</strong>
+                                        <p class="mt-xs">Para extraer esta caja ciega sin desarmar de más la estiba alta, remueva primero las siguientes cajas del exterior en el mismo nivel:</p>
+                                        <ul class="blocking-cajas-list mt-xs" id="blocking-cajas-list">
+                                            <!-- Blocking list -->
+                                        </ul>
+                                    </div>
+                                    <button class="btn btn-small btn-primary mt-sm btn-full" onclick="app.addBlindBoxToMuestra()">Agregar Caja Ciega a Muestra</button>
+                                </div>
+                            </div>
+
+                            <!-- Active sample overview -->
+                            <div class="muestra-overview-card mt-md">
+                                <h3>Resumen de Muestra Fitosanitaria</h3>
+                                <div class="muestra-stats">
+                                    <div class="m-stat">
+                                        <span class="m-val text-accent" id="muestra-cnt-selected">0</span>
+                                        <span class="m-lbl">Muestreadas</span>
+                                    </div>
+                                    <div class="m-stat">
+                                        <span class="m-val text-red" id="muestra-cnt-rejected">0</span>
+                                        <span class="m-lbl">Rechazadas</span>
+                                    </div>
+                                    <div class="m-stat">
+                                        <span class="m-val text-green" id="muestra-cnt-sug">0/4</span>
+                                        <span class="m-lbl">Sugeridas SAG</span>
+                                    </div>
+                                </div>
+                                <div class="muestra-list-container mt-sm">
+                                    <ul class="muestra-list" id="muestra-items-list">
+                                        <!-- Injected by JS -->
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-accent btn-full mt-lg" id="btn-goto-step6" onclick="app.goToStep6()" disabled>
+                                Validar Extracción en Terreno (Paso 6)
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="ml-sm">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 6: INSPECCIÓN FÍSICA Y ACTA (RESOLUCIÓN) -->
+                <section class="step-view" id="view-step-6">
+                    <div class="grid-2col">
+                        <div class="card p-lg">
+                            <div class="card-header">
+                                <span class="badge badge-primary">PASO 6</span>
+                                <h2>Validación de Extracción Físico & Acta SAG</h2>
+                            </div>
+                            <p class="description-text">
+                                El movilizador extrae físicamente la caja indicada. Con su terminal lectora (pistola Data Matrix), pistolea la etiqueta física. Si el código no coincide con la coordenada solicitada, la app activará una chicharra sonora para obligar a devolver la caja.
+                            </p>
+
+                            <div class="verification-scanning-pane mt-lg">
+                                <h3>Simulador de Validación de Extracción</h3>
+                                <div class="verification-step-card mt-md">
+                                    <div class="current-extraction-instructions" id="extraction-instructions-pane">
+                                        <!-- Injected by JS -->
+                                    </div>
+                                    
+                                    <div class="scanner-input-container mt-lg">
+                                        <label for="input-dm-verify">Pistolear Data Matrix Caja Extraída (Simulado)</label>
+                                        <div class="input-with-action mt-xs">
+                                            <input type="text" id="input-dm-verify" class="input-big font-mono" placeholder="Pistolee el Data Matrix aquí" onkeypress="if(event.key === 'Enter') app.verifyBoxScan()">
+                                            <button class="btn btn-primary" onclick="app.verifyBoxScan()">Validar Escaneo</button>
+                                        </div>
+                                        <div class="scan-suggested-actions mt-sm" id="scan-suggested-hints">
+                                            <!-- Quick click buttons to simulate correct or wrong scanning -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="box-evaluation-panel mt-xl" id="box-evaluation-pane" style="display:none;">
+                                <h3>Evaluación de Fruta en Mesa (Inspector SAG)</h3>
+                                <p class="small text-muted">Evalúe el estado fitosanitario de la caja <strong id="eval-box-id-lbl">N08-A-C2</strong>:</p>
+                                
+                                <div class="evaluation-actions mt-md">
+                                    <button class="btn btn-accent btn-large" onclick="app.evaluateBox('APPROVED')">
+                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" class="mr-sm">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                        Aprobar Caja (Sin Hallazgos Fitosanitarios)
+                                    </button>
+                                    <button class="btn btn-red btn-large" onclick="app.evaluateBox('REJECTED')">
+                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" class="mr-sm">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                        Rechazar Caja (Presencia de Plaga / Daño)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right panel: Inspection act and resolution status -->
+                        <div class="card p-lg">
+                            <h3>Acta y Resolución Fitosanitaria</h3>
+                            
+                            <div class="acta-preview mt-md">
+                                <div class="acta-header">
+                                    <h4>CERTIFICADO DE INSPECCIÓN FITOSANITARIA SAG</h4>
+                                    <span class="acta-no">Nº ACTA: SAG-2026-<span id="acta-num-id">0892</span></span>
+                                </div>
+                                <div class="acta-body">
+                                    <table class="acta-table">
+                                        <tbody>
+                                            <tr>
+                                                <th>Folio Pallet</th>
+                                                <td id="acta-folio" class="font-mono">--</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Packing List</th>
+                                                <td id="acta-plist">--</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Cajas Totales</th>
+                                                <td id="acta-tot-cajas">--</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Muestra Requerida</th>
+                                                <td>4 Cajas Físicas Mínimo</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Muestra Auditada</th>
+                                                <td><strong id="acta-audited-cnt">0</strong> Cajas</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Cajas Con Rechazo</th>
+                                                <td><strong id="acta-rejected-cnt" class="text-red">0</strong> Cajas</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Dictamen Fitosanitario</th>
+                                                <td><span class="status-tag locked" id="acta-dictamen">PENDIENTE</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <!-- Digital Signature Area -->
+                                    <div class="signature-section mt-lg" id="signature-area" style="display:none;">
+                                        <label>Firma Digital Inspector SAG (Escriba su Nombre completo)</label>
+                                        <input type="text" id="input-inspector-signature" class="input-signature" placeholder="Ej: Juan Carlos Pérez - SAG">
+                                        <div class="signature-line mt-sm"></div>
+                                        <span class="signature-caption">FIRMA DE CONFORMIDAD DIGITAL</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="actions-footer mt-xl">
+                                <button class="btn btn-secondary" onclick="app.resetAll()">Limpiar Datos</button>
+                                <button class="btn btn-primary" id="btn-finalize-inspection" onclick="app.finalizeInspection()" disabled>
+                                    Cerrar Lote y Emitir Certificado
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 7: HISTORIAL DE INSPECCIONES -->
+                <section class="step-view" id="view-step-7">
+                    <div class="card p-lg">
+                        <div class="card-header">
+                            <span class="badge badge-primary">HISTORIAL</span>
+                            <h2>Registro de Inspecciones Fitosanitarias SAG</h2>
+                        </div>
+                        <p class="description-text">
+                            Historial local de lotes procesados y certificados emitidos en esta estación de trabajo. Las inspecciones quedan guardadas en la memoria del navegador (LocalStorage) para su consulta y auditoría rápida.
+                        </p>
+
+                        <div class="history-table-container mt-lg" style="overflow-x: auto; background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1rem;">
+                            <table class="data-table" id="history-table" style="width:100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid var(--color-border);">
+                                        <th style="padding:10px;">Fecha/Hora</th>
+                                        <th style="padding:10px;">Folio Pallet</th>
+                                        <th style="padding:10px;">Lote ERP</th>
+                                        <th style="padding:10px;">Inspector</th>
+                                        <th style="padding:10px;">Cajas Auditadas</th>
+                                        <th style="padding:10px;">Dictamen</th>
+                                        <th style="padding:10px; text-align:right;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <!-- Injected dynamically by JS -->
+                                </tbody>
+                            </table>
+                            <div class="empty-history-msg" id="history-empty-msg" style="display:none; text-align:center; padding:3rem 1rem; color:var(--color-text-muted);">
+                                <span>No existen inspecciones registradas en este dispositivo.</span>
+                            </div>
+                        </div>
+
+                        <div class="actions-footer mt-xl">
+                            <button class="btn btn-secondary" onclick="app.exportHistoryJSON()">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="mr-sm">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Exportar Historial (JSON)
+                            </button>
+                            <button class="btn btn-outline-red" onclick="app.clearHistory()">Limpiar Historial</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL 1: MANUAL ASSIST DATA MATRIX SCANNING (ZUNCHO VERDE TAPA ETIQUETA) -->
+    <div class="modal-backdrop" id="modal-manual-scan" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Lectura Manual Asistida (Data Matrix Obstruido)</h3>
+                <button class="modal-close-btn" onclick="app.closeModal('modal-manual-scan')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-alert-orange">
+                    <strong>Código Obstruido por Zuncho Verde:</strong>
+                    <p class="mt-xs">El zuncho de tracción cruza sobre la etiqueta de la caja. El sistema reconoce la caja por su geometría en el nivel pero no puede decodificar el Data Matrix de forma automatizada.</p>
+                </div>
+                
+                <p class="mt-md">Por favor, acérquese a la caja física, levante ligeramente el zuncho e introduzca manualmente el código Data Matrix de la caja, o confirme que ha verificado el código visualmente.</p>
+                
+                <div class="form-group mt-md">
+                    <label>Coordenada del Pallet</label>
+                    <input type="text" id="modal-box-coord" class="input-big font-mono" disabled>
+                </div>
+                
+                <div class="form-group mt-md">
+                    <label>Data Matrix Esperado (Para Trazabilidad ERP)</label>
+                    <input type="text" id="modal-box-dm-expected" class="input-big font-mono" disabled>
+                </div>
+
+                <div class="form-group mt-md">
+                    <label for="modal-input-dm-read">Código Data Matrix Leído / Escaneado</label>
+                    <div class="input-with-action">
+                        <input type="text" id="modal-input-dm-read" class="input-big font-mono" placeholder="Ingrese el código Data Matrix leído">
+                        <button class="btn btn-primary" onclick="app.confirmManualScan()">Confirmar Lectura</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CERTIFICATE ACTA SAG OFICIAL POPUP -->
+    <div class="modal-backdrop" id="modal-acta-sag" style="display:none;">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Certificado de Inspección Fitosanitaria SAG Emitido</h3>
+                <button class="modal-close-btn" onclick="app.closeModal('modal-acta-sag')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="certificate-container" id="certificate-print-area">
+                    <div class="cert-header">
+                        <div class="cert-logos">
+                            <div class="cert-logo-box text-bold">SERVICIO AGRÍCOLA Y GANADERO</div>
+                            <div class="cert-logo-box text-bold text-right text-primary">EXPORTADORA PRIZE</div>
+                        </div>
+                        <h2>ACTA DE CERTIFICACIÓN DE INOCUIDAD FITOSANITARIA</h2>
+                        <div class="cert-meta">
+                            <span><strong>Nº Registro:</strong> ACTA-SAG-2026-<span id="cert-no">0892</span></span>
+                            <span><strong>Fecha Emisión:</strong> <span id="cert-date">22-07-2026</span></span>
+                        </div>
+                    </div>
+
+                    <div class="cert-content mt-lg">
+                        <p>Por la presente se certifica que se ha realizado la inspección fitosanitaria SAG al pallet de exportación en planta según los protocolos establecidos:</p>
+                        
+                        <h4 class="mt-md border-bottom">1. Identificación del Lote</h4>
+                        <table class="cert-table">
+                            <tr>
+                                <th>Folio Único de Pallet</th>
+                                <td><span id="cert-folio-id" class="font-mono text-bold">1020013265</span></td>
+                                <th>Nº Packing List</th>
+                                <td><span id="cert-plist-id">PL-SAG-CEREZAS-01</span></td>
+                            </tr>
+                            <tr>
+                                <th>Especie / Variedad</th>
+                                <td><span id="cert-variedad">Cerezas / Santina</span></td>
+                                <th>Calibre / Envase</th>
+                                <td><span id="cert-calibre">LD / Caja Plástica Prize 5kg</span></td>
+                            </tr>
+                            <tr>
+                                <th>Cajas Totales en Estiba</th>
+                                <td><span id="cert-total-cajas">184</span> Cajas Físicas</td>
+                                <th>Lote Fitosanitario ERP</th>
+                                <td><span id="cert-lote-id">LOT-2026-CH-098</span></td>
+                            </tr>
+                        </table>
+
+                        <h4 class="mt-md border-bottom">2. Resumen de Muestreo</h4>
+                        <table class="cert-table">
+                            <thead>
+                                <tr>
+                                    <th>Caja Muestreada</th>
+                                    <th>Coordenada</th>
+                                    <th>Tipo de Muestra</th>
+                                    <th>Data Matrix</th>
+                                    <th>Estado Evaluación</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cert-muestra-tbody">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-md border-bottom">3. Dictamen Fitosanitario SAG</h4>
+                        <div class="cert-dictamen-box" id="cert-dictamen-pane">
+                            <span class="cert-result text-green text-bold" id="cert-dictamen-val">APROBADO PARA EXPORTACIÓN</span>
+                            <p class="small text-muted mt-xs">El lote cumple con las exigencias del mercado de destino y las normativas fitosanitarias vigentes.</p>
+                        </div>
+
+                        <div class="cert-signatures mt-xl">
+                            <div class="cert-sig-box text-center">
+                                <div class="signature-display font-signature" id="cert-inspector-sig">Juan Carlos Pérez</div>
+                                <div class="sig-line"></div>
+                                <span class="text-bold">Inspector Fitosanitario SAG</span>
+                            </div>
+                            <div class="cert-sig-box text-center">
+                                <div class="signature-display font-signature">Contraparte SAG Autorizada</div>
+                                <div class="sig-line"></div>
+                                <span class="text-bold">Contraparte SAG Planta Prize</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions-footer mt-lg">
+                    <button class="btn btn-secondary" onclick="window.print()">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="mr-sm">
+                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                            <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                        Imprimir / Guardar PDF
+                    </button>
+                    <button class="btn btn-primary" onclick="app.closeModal('modal-acta-sag'); app.resetAll()">Iniciar Nueva Inspección</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core App JS -->
+    <script src="app.js"></script>
+</body>
+</html>
