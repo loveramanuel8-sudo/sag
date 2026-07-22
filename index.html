@@ -163,6 +163,74 @@
                                     <option value="solicitud_5344">Solicitud SAG Nº 5344 (Cerezas Prize, 21 Pallets, 4128 Cajas)</option>
                                     <option value="solicitud_5345_error">Solicitud SAG Nº 5345 (Lote con Descuadrado, 18 Pallets, 3248 Cajas)</option>
                                 </select>
+
+                                 <!-- 🧪 MÓDULO DE PRUEBAS: CARGA DE JSON PERSONALIZADO -->
+                                 <div class="test-module-card mt-md" style="border: 1px dashed var(--color-accent-sag); border-radius: var(--radius-md); padding: 1rem; background: rgba(58, 124, 165, 0.05); margin-top: 1rem;">
+                                     <h4 style="font-size:0.85rem; color: var(--color-accent-sag); display: flex; align-items: center; justify-content: space-between; margin: 0 0 8px 0;">
+                                         <span>🧪 Panel de Pruebas: Cargar JSON Personalizado</span>
+                                         <button class="btn btn-outline" onclick="app.toggleTestPanel()" style="padding: 2px 8px; font-size: 0.7rem; border-color: var(--color-accent-sag); color: var(--color-accent-sag); background: transparent;">Mostrar / Ocultar</button>
+                                     </h4>
+                                     <div id="test-json-panel" style="display:none; margin-top: 10px;">
+                                         <!-- Tab selector -->
+                                         <div style="display:flex; border-bottom: 1px solid var(--color-border); margin-bottom: 12px; gap: 10px;">
+                                             <button class="test-tab-btn" id="btn-test-tab-form" onclick="app.setTestMode('form')" style="padding: 6px 12px; background: none; border: none; border-bottom: 2px solid var(--color-accent-sag); color: #fff; font-size: 0.75rem; font-weight: 700; cursor: pointer; outline: none;">Formulario Simple</button>
+                                             <button class="test-tab-btn" id="btn-test-tab-json" onclick="app.setTestMode('json')" style="padding: 6px 12px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--color-text-muted); font-size: 0.75rem; cursor: pointer; outline: none;">Editor JSON (Avanzado)</button>
+                                         </div>
+
+                                         <!-- TAB 1: SIMPLE FORM VIEW -->
+                                         <div id="test-form-view" style="display:block; text-align: left;">
+                                             <p class="small text-muted mb-sm" style="font-size: 0.75rem; margin-bottom: 10px;">Complete los campos de abajo y la app generará y distribuirá automáticamente los pallets y cajas.</p>
+                                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 12px;">
+                                                 <div class="form-group" style="margin-bottom: 6px;">
+                                                     <label style="font-size:0.7rem; color: var(--color-text-muted); margin-bottom: 2px; display: block;">Nº Solicitud SAG</label>
+                                                     <input type="text" id="test-form-solicitud" class="input-big" style="padding: 5px; font-size: 0.75rem; width: 100%; box-sizing: border-box;" value="5346">
+                                                 </div>
+                                                 <div class="form-group" style="margin-bottom: 6px;">
+                                                     <label style="font-size:0.7rem; color: var(--color-text-muted); margin-bottom: 2px; display: block;">Lote ERP/WMS</label>
+                                                     <input type="text" id="test-form-lote" class="input-big" style="padding: 5px; font-size: 0.75rem; width: 100%; box-sizing: border-box;" value="LOT-5346-SAG">
+                                                 </div>
+                                                 <div class="form-group" style="margin-bottom: 6px;">
+                                                     <label style="font-size:0.7rem; color: var(--color-text-muted); margin-bottom: 2px; display: block;">Cajas Totales Lote</label>
+                                                     <input type="number" id="test-form-cajas" class="input-big" style="padding: 5px; font-size: 0.75rem; width: 100%; box-sizing: border-box;" value="3680">
+                                                 </div>
+                                                 <div class="form-group" style="margin-bottom: 6px;">
+                                                     <label style="font-size:0.7rem; color: var(--color-text-muted); margin-bottom: 2px; display: block;">Pallets Totales Lote</label>
+                                                     <input type="number" id="test-form-pallets" class="input-big" style="padding: 5px; font-size: 0.75rem; width: 100%; box-sizing: border-box;" value="20">
+                                                 </div>
+                                                 <div class="form-group" style="margin-bottom: 6px;">
+                                                     <label style="font-size:0.7rem; color: var(--color-text-muted); margin-bottom: 2px; display: block;">CSG Productor</label>
+                                                     <input type="text" id="test-form-csg" class="input-big" style="padding: 5px; font-size: 0.75rem; width: 100%; box-sizing: border-box;" value="169933">
+                                                 </div>
+                                                 <div class="form-group" style="margin-bottom: 6px;">
+                                                     <label style="font-size:0.7rem; color: var(--color-text-muted); margin-bottom: 2px; display: block;">Nombre Productor</label>
+                                                     <input type="text" id="test-form-productor" class="input-big" style="padding: 5px; font-size: 0.75rem; width: 100%; box-sizing: border-box;" value="AGROINVEST LA POZA">
+                                                 </div>
+                                                 <div class="form-group" style="margin-bottom: 6px;">
+                                                     <label style="font-size:0.7rem; color: var(--color-text-muted); margin-bottom: 2px; display: block;">Destinos Autorizados</label>
+                                                     <input type="text" id="test-form-destinos" class="input-big" style="padding: 5px; font-size: 0.75rem; width: 100%; box-sizing: border-box;" value="CHINA, TAIWÁN">
+                                                 </div>
+                                                 <div class="form-group" style="margin-bottom: 6px;">
+                                                     <label style="font-size:0.7rem; color: var(--color-text-muted); margin-bottom: 2px; display: block;">Nº Pallets a Muestrear (ej: 1, 5)</label>
+                                                     <input type="text" id="test-form-muestra" class="input-big" style="padding: 5px; font-size: 0.75rem; width: 100%; box-sizing: border-box;" value="1, 5" placeholder="Índices separados por coma">
+                                                 </div>
+                                             </div>
+                                             <div class="mt-sm" style="display:flex; justify-content:flex-end; margin-top: 10px;">
+                                                 <button class="btn btn-primary" style="font-size:0.75rem; padding:5px 12px; background-color: var(--color-accent-sag); border-color: var(--color-accent-sag);" onclick="app.generateLotFromForm()">⚡ Generar y Cargar Lote</button>
+                                             </div>
+                                         </div>
+
+                                         <!-- TAB 2: JSON EDITOR VIEW -->
+                                         <div id="test-json-view" style="display:none;">
+                                             <p class="small text-muted mb-sm" style="font-size: 0.75rem; margin-bottom: 8px;">Pegue o edite un JSON con la estructura completa del lote para realizar configuraciones libres.</p>
+                                             <textarea id="test-json-input" class="font-mono" style="width: 100%; height: 180px; background-color: #0f172a !important; color: #4ade80 !important; border: 1.5px solid #334155 !important; border-radius: var(--radius-sm); padding: 10px; font-size: 0.75rem; resize: vertical; box-sizing: border-box; outline: none;" placeholder="Pegue su JSON de pruebas aquí..."></textarea>
+                                             <div class="mt-sm" style="display:flex; gap:10px; justify-content:flex-end; margin-top: 8px;">
+                                                 <button class="btn btn-secondary" style="font-size:0.75rem; padding:4px 10px;" onclick="app.loadTestTemplate()">Cargar Plantilla Ejemplo</button>
+                                                 <button class="btn btn-primary" style="font-size:0.75rem; padding:4px 10px; background-color: var(--color-accent-sag); border-color: var(--color-accent-sag);" onclick="app.importCustomTestData()">Importar Lote de Pruebas</button>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+
                                 <div class="packing-list-preview" id="plist-preview-container" style="display:none; margin-top: 1.5rem;">
                                     <h3 class="section-divider-title">Detalles de la Solicitud SAG Nº <span id="td-solic-no" class="text-accent font-mono text-bold">--</span></h3>
                                     
@@ -521,6 +589,14 @@
                                     </div>
                                 </div>
 
+                                <!-- Decoded Data Matrix codes list -->
+                                <div id="decoded-codes-list-container" style="display:none; margin-top: 1rem; background: rgba(0,0,0,0.15); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 12px; text-align: left;">
+                                    <h4 style="font-size:0.8rem; border-bottom:1px solid var(--color-border); padding-bottom:5px; margin-bottom: 8px; color: var(--color-accent-sag);">📋 Data Matrix Decodificados (Filtro Cara A)</h4>
+                                    <ul id="decoded-codes-list" style="margin:0; padding-left:15px; font-family:var(--font-mono); font-size:0.75rem; color:var(--color-text); max-height:130px; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:4px 12px;">
+                                        <!-- Injected dynamically by JS -->
+                                    </ul>
+                                </div>
+
                                 <div class="actions-footer mt-xl">
                                     <button class="btn btn-secondary" onclick="app.resetAll()">Limpiar Datos</button>
                                     <button class="btn btn-primary" id="btn-goto-tablet" onclick="app.goToTablet()" disabled>
@@ -538,12 +614,13 @@
                             <p class="small text-muted mb-md">Capa geométrica de cajas (Nivel x Cara x Columna)</p>
                             
                             <div class="overlay-graphic-demo">
-                                <div class="pallet-diagram-wireframe">
+                                <div class="pallet-diagram-wireframe" style="position:relative; width: 100%; max-width: 320px; margin: 0 auto;">
                                     <!-- Rendered dynamically or standard representation -->
-                                    <div class="wireframe-container" id="wireframe-viz">
+                                    <div class="wireframe-container" id="wireframe-viz" style="position:relative; width:100%; border: 1.5px solid var(--color-border); border-radius:var(--radius-md); padding:10px; box-sizing:border-box;">
                                         <!-- Wireframe boxes will be injected here by app.js -->
                                     </div>
                                 </div>
+                                <p class="small text-muted mt-sm" style="font-size:0.75rem;">💡 Pasa el cursor sobre cualquier caja para ver el código decodificado.</p>
                             </div>
                         </div>
                     </div>

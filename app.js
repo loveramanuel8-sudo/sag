@@ -1198,6 +1198,29 @@ class AppController {
             this.state.overlayDetectionsGenerated = true;
             document.getElementById('lock-step-5').innerText = '🔓';
 
+            // Populate list of decoded Data Matrix codes on left panel
+            const codesListContainer = document.getElementById('decoded-codes-list-container');
+            const codesList = document.getElementById('decoded-codes-list');
+            if (codesListContainer && codesList) {
+                codesListContainer.style.display = 'block';
+                codesList.innerHTML = '';
+                // Filter boxes belonging to Cara A (which matches the wireframe)
+                const faceABoxes = this.state.boxes.filter(b => b.face === 'A');
+                faceABoxes.forEach(b => {
+                    const li = document.createElement('li');
+                    li.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                    li.style.padding = '4px 0';
+                    li.style.listStyle = 'none';
+                    li.innerHTML = `
+                        <strong style="color:var(--color-accent-sag);">${b.id.split('-')[0]}-${b.id.split('-')[2]}:</strong>
+                        <span style="font-family:var(--font-mono); font-size:0.7rem; ${b.obstructedByZuncho ? 'color:var(--color-danger); text-decoration:line-through; opacity:0.6;' : 'color:var(--color-primary); font-weight:700;'}">
+                            ${b.obstructedByZuncho ? 'OBSTRUIDO' : b.boxCode}
+                        </span>
+                    `;
+                    codesList.appendChild(li);
+                });
+            }
+
             // Draw wireframe representation on step 4 right panel
             this.drawPalletWireframe();
             
@@ -1209,6 +1232,15 @@ class AppController {
     drawPalletWireframe() {
         const container = document.getElementById('wireframe-viz');
         container.innerHTML = '';
+
+        // If they captured a photo of Cara A, set it as the background of the wireframe viz!
+        if (this.state.capturedPhotos && this.state.capturedPhotos['A']) {
+            container.style.backgroundImage = `url(${this.state.capturedPhotos['A']})`;
+            container.style.backgroundSize = 'cover';
+            container.style.backgroundPosition = 'center';
+        } else {
+            container.style.backgroundImage = 'none';
+        }
 
         // Draw 12 rows, each row showing Face A Col 1, Col 2 (just for simple visual)
         for (let lvl = 12; lvl >= 1; lvl--) {
@@ -1226,6 +1258,8 @@ class AppController {
                 if (box1.obstructedByZuncho) box1Div.classList.add('obstructed');
                 else box1Div.classList.add('decoded');
                 box1Div.innerText = `N${levelStr}-C1`;
+                box1Div.title = `Coordenada: ${box1Id}\nCódigo Data Matrix: ${box1.obstructedByZuncho ? 'Obstruido' : box1.boxCode}\nEstado: ${box1.obstructedByZuncho ? 'Requiere Lectura Manual' : 'Decodificado con Éxito'}`;
+                box1Div.style.cursor = 'help';
             }
             row.appendChild(box1Div);
 
@@ -1238,6 +1272,8 @@ class AppController {
                 if (box2.obstructedByZuncho) box2Div.classList.add('obstructed');
                 else box2Div.classList.add('decoded');
                 box2Div.innerText = `N${levelStr}-C2`;
+                box2Div.title = `Coordenada: ${box2Id}\nCódigo Data Matrix: ${box2.obstructedByZuncho ? 'Obstruido' : box2.boxCode}\nEstado: ${box2.obstructedByZuncho ? 'Requiere Lectura Manual' : 'Decodificado con Éxito'}`;
+                box2Div.style.cursor = 'help';
             }
             row.appendChild(box2Div);
 
@@ -2013,6 +2049,233 @@ class AppController {
         if (lock6) lock6.innerText = selected.length >= 4 ? '🔓' : '🔒';
     }
 
+    setTestMode(mode) {
+        const formView = document.getElementById('test-form-view');
+        const jsonView = document.getElementById('test-json-view');
+        const btnForm = document.getElementById('btn-test-tab-form');
+        const btnJson = document.getElementById('btn-test-tab-json');
+
+        if (mode === 'form') {
+            formView.style.display = 'block';
+            jsonView.style.display = 'none';
+            btnForm.style.borderBottom = '2px solid var(--color-accent-sag)';
+            btnForm.style.color = '#fff';
+            btnForm.style.fontWeight = '700';
+            btnJson.style.borderBottom = '2px solid transparent';
+            btnJson.style.color = 'var(--color-text-muted)';
+            btnJson.style.fontWeight = 'normal';
+        } else {
+            formView.style.display = 'none';
+            jsonView.style.display = 'block';
+            btnForm.style.borderBottom = '2px solid transparent';
+            btnForm.style.color = 'var(--color-text-muted)';
+            btnForm.style.fontWeight = 'normal';
+            btnJson.style.borderBottom = '2px solid var(--color-accent-sag)';
+            btnJson.style.color = '#fff';
+            btnJson.style.fontWeight = '700';
+        }
+    }
+
+    generateLotFromForm() {
+        const solicitudNo = document.getElementById('test-form-solicitud').value.trim();
+        const lote = document.getElementById('test-form-lote').value.trim();
+        const cajas = parseInt(document.getElementById('test-form-cajas').value);
+        const pallets = parseInt(document.getElementById('test-form-pallets').value);
+        const csg = document.getElementById('test-form-csg').value.trim();
+        const nombre = document.getElementById('test-form-productor').value.trim();
+        const destinos = document.getElementById('test-form-destinos').value.trim();
+        const muestraInput = document.getElementById('test-form-muestra').value.trim();
+
+        if (!solicitudNo || !lote || !cajas || !pallets || !csg || !nombre || !destinos) {
+            alert("Por favor rellene todos los campos obligatorios.");
+            return;
+        }
+
+        // Generate palletsList
+        const palletsList = [];
+        const averageCajasPerPallet = Math.round(cajas / pallets);
+        
+        // Parse requested samples
+        const sampleIndices = muestraInput.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+        const sapMuestra = [];
+
+        // Generate folios
+        for (let i = 1; i <= pallets; i++) {
+            const indexStr = String(i).padStart(3, '0');
+            const folio = `10200072${indexStr}`;
+            
+            const isSample = sampleIndices.includes(i);
+            if (isSample) {
+                sapMuestra.push(folio);
+            }
+
+            palletsList.push({
+                id: i,
+                folio: folio,
+                csg: csg,
+                productor: nombre,
+                cajas: i === pallets ? (cajas - (averageCajasPerPallet * (pallets - 1))) : averageCajasPerPallet, // remainder check
+                defaultChecked: isSample
+            });
+        }
+
+        // Fallback sample if none selected
+        if (sapMuestra.length === 0) {
+            sapMuestra.push(palletsList[0].folio);
+            palletsList[0].defaultChecked = true;
+        }
+
+        const customData = {
+            solicitudNo: solicitudNo,
+            lote: lote,
+            planta: "PRIZE PILOTO",
+            csp: "105634",
+            kilos: (cajas * 4.54).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            cajas: cajas,
+            pallets: pallets,
+            especie: "CEREZAS",
+            destinos: destinos,
+            sapMuestra: sapMuestra,
+            fecha: new Date().toLocaleDateString('es-CL'),
+            productores: [
+                { especie: "CEREZAS", csg: csg, proceso: "20779", nombre: nombre, cajas: cajas }
+            ],
+            palletsList: palletsList
+        };
+
+        const key = 'solicitud_custom_' + solicitudNo;
+        
+        // Register in local database
+        PackingListMockData[key] = customData;
+
+        // Add to select dropdown if not already there
+        const select = document.getElementById('select-packing-list');
+        let optionExists = false;
+        for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === key) {
+                optionExists = true;
+                break;
+            }
+        }
+
+        if (!optionExists) {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.innerText = `Solicitud SAG Nº ${solicitudNo} (Personalizada: ${lote})`;
+            select.appendChild(opt);
+        }
+
+        // Select it and load it
+        select.value = key;
+        this.loadPackingListData(key);
+
+        this.state.soundManager.playBeep();
+        this.logConsole(`[SISTEMA] Generado lote desde formulario: Solicitud SAG Nº ${solicitudNo}.`);
+        
+        alert(`✔ LOTE GENERADO CON ÉXITO\n\nSe ha creado y cargado la Solicitud SAG Nº ${solicitudNo} con ${pallets} pallets y ${cajas} cajas. \n\nFolios de muestra SAP asignados: ${sapMuestra.join(', ')}.`);
+        
+        // Auto hide test panel
+        document.getElementById('test-json-panel').style.display = 'none';
+    }
+
+    toggleTestPanel() {
+        const panel = document.getElementById('test-json-panel');
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+
+    loadTestTemplate() {
+        const template = {
+            solicitudNo: "9090",
+            lote: "LOT-9090-TEST",
+            planta: "PRIZE PILOTO",
+            csp: "109090",
+            kilos: "12.500,00",
+            cajas: 1840,
+            pallets: 10,
+            especie: "CEREZAS",
+            destinos: "CHINA, ESTADOS UNIDOS, BRASIL",
+            sapMuestra: ["1020009001", "1020009003"],
+            fecha: new Date().toLocaleDateString('es-CL'),
+            productores: [
+                { especie: "CEREZAS", csg: "55555", proceso: "99881", nombre: "AGRICOLA LOS ANDES", cajas: 1840 }
+            ],
+            palletsList: [
+                { id: 1, folio: "1020009001", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184, defaultChecked: true },
+                { id: 2, folio: "1020009002", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184 },
+                { id: 3, folio: "1020009003", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184, defaultChecked: true },
+                { id: 4, folio: "1020009004", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184 },
+                { id: 5, folio: "1020009005", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184 },
+                { id: 6, folio: "1020009006", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184 },
+                { id: 7, folio: "1020009007", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184 },
+                { id: 8, folio: "1020009008", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184 },
+                { id: 9, folio: "1020009009", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184 },
+                { id: 10, folio: "1020009010", csg: "55555", productor: "AGRICOLA LOS ANDES", cajas: 184 }
+            ]
+        };
+        document.getElementById('test-json-input').value = JSON.stringify(template, null, 4);
+    }
+
+    importCustomTestData() {
+        const text = document.getElementById('test-json-input').value.trim();
+        if (!text) {
+            alert("Por favor, cargue una plantilla o pegue un JSON válido.");
+            return;
+        }
+
+        try {
+            const data = JSON.parse(text);
+            
+            // Validate required fields
+            const required = ['solicitudNo', 'lote', 'planta', 'csp', 'kilos', 'cajas', 'pallets', 'especie', 'destinos', 'sapMuestra', 'fecha', 'productores', 'palletsList'];
+            for (const field of required) {
+                if (data[field] === undefined) {
+                    throw new Error(`Falta el campo requerido: "${field}"`);
+                }
+            }
+
+            const key = 'solicitud_custom_' + data.solicitudNo;
+            
+            // Insert into local Mock Database
+            PackingListMockData[key] = data;
+
+            // Check if option already exists in dropdown
+            const select = document.getElementById('select-packing-list');
+            let optionExists = false;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === key) {
+                    optionExists = true;
+                    break;
+                }
+            }
+
+            if (!optionExists) {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = `Solicitud SAG Nº ${data.solicitudNo} (Personalizada: ${data.lote})`;
+                select.appendChild(opt);
+            }
+
+            // Select it and load it
+            select.value = key;
+            this.loadPackingListData(key);
+
+            this.state.soundManager.playBeep();
+            this.logConsole(`[SISTEMA] Importado lote de pruebas personalizado: Solicitud SAG Nº ${data.solicitudNo}.`);
+            
+            alert(`✔ LOTE IMPORTADO CON ÉXITO\n\nSe ha importado y cargado la Solicitud SAG Nº ${data.solicitudNo} con ${data.pallets} pallets y ${data.cajas} cajas de forma dinámica.`);
+            
+            // Auto hide panel
+            document.getElementById('test-json-panel').style.display = 'none';
+        } catch (e) {
+            console.error("Error parsing test JSON", e);
+            alert(`❌ ERROR DE IMPORTACIÓN\n\nEl JSON ingresado contiene errores o campos faltantes.\n\nDetalle: ${e.message}`);
+        }
+    }
+
     resetAll() {
         this.stopCamera();
         this.state.activeFolio = null;
@@ -2024,6 +2287,11 @@ class AppController {
         this.state.physicalBoxCount = 0;
         this.state.cuadraturaCompleted = false;
         this.state.cuadraturaAdjusted = false;
+
+        const codesListContainer = document.getElementById('decoded-codes-list-container');
+        const codesList = document.getElementById('decoded-codes-list');
+        if (codesListContainer) codesListContainer.style.display = 'none';
+        if (codesList) codesList.innerHTML = '';
         this.state.overlayDetectionsGenerated = false;
         this.state.boxes = [];
         this.state.selectedBoxId = null;
