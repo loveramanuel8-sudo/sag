@@ -370,7 +370,7 @@
                                             <span id="cap-label-A">CARA A (Frontal)</span>
                                             <span class="cap-status" id="cap-status-A">Pendiente</span>
                                         </div>
-                                        <div class="cap-thumbnail" onclick="app.simulateCapture('A')">
+                                        <div class="cap-thumbnail" onclick="app.openCamera('A')">
                                             <div class="cap-overlay">
                                                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -387,7 +387,7 @@
                                             <span id="cap-label-B">CARA B (Lateral)</span>
                                             <span class="cap-status" id="cap-status-B">Pendiente</span>
                                         </div>
-                                        <div class="cap-thumbnail" onclick="app.simulateCapture('B')">
+                                        <div class="cap-thumbnail" onclick="app.openCamera('B')">
                                             <div class="cap-overlay">
                                                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -404,7 +404,7 @@
                                             <span id="cap-label-C">CARA C (Posterior)</span>
                                             <span class="cap-status" id="cap-status-C">Pendiente</span>
                                         </div>
-                                        <div class="cap-thumbnail" onclick="app.simulateCapture('C')">
+                                        <div class="cap-thumbnail" onclick="app.openCamera('C')">
                                             <div class="cap-overlay">
                                                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -421,7 +421,7 @@
                                             <span id="cap-label-D">CARA D (Lateral Opuesta)</span>
                                             <span class="cap-status" id="cap-status-D">Pendiente</span>
                                         </div>
-                                        <div class="cap-thumbnail" onclick="app.simulateCapture('D')">
+                                        <div class="cap-thumbnail" onclick="app.openCamera('D')">
                                             <div class="cap-overlay">
                                                 <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -990,6 +990,33 @@
                         Imprimir / Guardar PDF
                     </button>
                     <button class="btn btn-primary" onclick="app.closeModal('modal-acta-sag'); app.resetAll()">Iniciar Nueva Inspección</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: WEBCAM PALLET CAMERA CAPTURE -->
+    <div class="modal-backdrop" id="modal-camera-capture" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Cámara Web - Capturar Cara <span id="modal-camera-face-lbl">A</span></h3>
+                <button class="modal-close-btn" onclick="app.stopCamera()">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-sm text-muted" style="font-size:0.85rem;">Enfoque el pallet (o use su cámara de pruebas) y presione el botón de captura.</p>
+                <div class="video-container" style="background:#0c111e; border: 2px solid var(--color-border); border-radius:var(--radius-md); overflow:hidden; position:relative; width:100%; max-width:440px; height:280px; margin:0 auto;">
+                    <video id="webcam-preview" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+                    <!-- Visual frame guide overlay -->
+                    <div style="position:absolute; top:10%; bottom:10%; left:10%; right:10%; border:1.5px dashed var(--color-primary); pointer-events:none; opacity:0.6;"></div>
+                </div>
+                <div id="camera-error-msg" class="text-danger mt-sm" style="display:none; font-size:0.8rem; font-weight:700;">
+                    No se pudo acceder a la cámara. Asegúrese de dar permisos.
+                </div>
+                <div class="mt-md" style="display:flex; justify-content:center; gap:10px;">
+                    <button class="btn btn-secondary" onclick="app.stopCamera()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="app.snapPhoto()">
+                        📸 Capturar Foto
+                    </button>
                 </div>
             </div>
         </div>

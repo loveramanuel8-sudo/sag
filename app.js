@@ -89,6 +89,12 @@ const AppState = {
         D: false
     },
     
+    // Camera state
+    cameraActiveFace: 'A',
+    webcamStream: null,
+    capturedPhotos: {},
+    currentlyEvaluatingBoxId: null,
+    
     // Conteo & Cuadratura (Step 3)
     physicalBoxCount: 0,
     cuadraturaCompleted: false,
@@ -887,6 +893,113 @@ class AppController {
         setTimeout(() => this.simulateCapture('D'), 750);
     }
 
+    openCamera(face) {
+        this.state.cameraActiveFace = face;
+        document.getElementById('modal-camera-face-lbl').innerText = face;
+        document.getElementById('camera-error-msg').style.display = 'none';
+        
+        const video = document.getElementById('webcam-preview');
+        document.getElementById('modal-camera-capture').style.display = 'flex';
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(stream => {
+                    this.state.webcamStream = stream;
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(err => {
+                    console.error("Error accessing webcam", err);
+                    document.getElementById('camera-error-msg').style.display = 'block';
+                    document.getElementById('camera-error-msg').innerText = "No se pudo acceder a la cámara. Iniciando simulación automática...";
+                    setTimeout(() => {
+                        this.stopCamera();
+                        this.simulateCapture(face);
+                    }, 1500);
+                });
+        } else {
+            document.getElementById('camera-error-msg').style.display = 'block';
+            document.getElementById('camera-error-msg').innerText = "Cámara no soportada. Iniciando simulación...";
+            setTimeout(() => {
+                this.stopCamera();
+                this.simulateCapture(face);
+            }, 1500);
+        }
+    }
+
+    stopCamera() {
+        const video = document.getElementById('webcam-preview');
+        if (this.state.webcamStream) {
+            this.state.webcamStream.getTracks().forEach(track => track.stop());
+            this.state.webcamStream = null;
+        }
+        if (video) {
+            video.srcObject = null;
+        }
+        this.closeModal('modal-camera-capture');
+    }
+
+    snapPhoto() {
+        const face = this.state.cameraActiveFace;
+        const video = document.getElementById('webcam-preview');
+        
+        if (!video || !this.state.webcamStream) {
+            this.simulateCapture(face);
+            this.stopCamera();
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        
+        if (!this.state.capturedPhotos) {
+            this.state.capturedPhotos = {};
+        }
+        this.state.capturedPhotos[face] = dataUrl;
+
+        this.state.capturedFaces[face] = true;
+        
+        const label = document.getElementById(`cap-label-${face}`);
+        if (label) {
+            label.innerText = `CARA ${face} - Folio: ${this.state.activeFolio}`;
+        }
+
+        const item = document.getElementById(`cap-face-${face}`);
+        if (item) {
+            item.classList.add('done');
+        }
+        
+        const status = document.getElementById(`cap-status-${face}`);
+        if (status) {
+            status.innerText = "Capturado Real";
+        }
+
+        const thumb = document.getElementById(`thumb-${face}`);
+        if (thumb) {
+            thumb.innerHTML = `
+                <img src="${dataUrl}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:1;">
+                <div class="photo-watermark-overlay" style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; background:rgba(0,0,0,0.3); border-radius: var(--radius-sm); padding: 5px; text-align:center; box-sizing:border-box; position:absolute; top:0; left:0; z-index:2;">
+                    <span style="font-size:0.55rem; font-weight:800; color:#fff; font-family:var(--font-mono); text-shadow:1px 1px 2px #000;">${this.state.activeFolio} - Cara ${face}</span>
+                </div>
+            `;
+        }
+        
+        this.state.soundManager.playBeep();
+        this.logConsole(`[VISIÓN] Foto REAL capturada para Folio ${this.state.activeFolio} (Cara ${face}).`);
+
+        this.stopCamera();
+
+        if (Object.values(this.state.capturedFaces).every(v => v === true)) {
+            this.evaluateCuadratura();
+        }
+    }
+
     evaluateCuadratura() {
         const expected = this.state.boxes.length;
         
@@ -1083,6 +1196,18 @@ class AppController {
         container.innerHTML = '';
 
         const face = this.state.inspectorActiveFace;
+
+        // Set live photo background if captured
+        const bg = document.getElementById('pallet-image-bg');
+        if (bg) {
+            if (this.state.capturedPhotos && this.state.capturedPhotos[face]) {
+                bg.style.backgroundImage = `url(${this.state.capturedPhotos[face]})`;
+                bg.style.backgroundSize = 'cover';
+                bg.style.backgroundPosition = 'center';
+            } else {
+                bg.style.backgroundImage = 'linear-gradient(180deg, #1b253b 0%, #0d1322 100%)';
+            }
+        }
 
         // Render 12 levels for current face
         // Level 12 down to 1
@@ -1475,32 +1600,37 @@ class AppController {
         document.getElementById('signature-area').style.display = 'none';
         document.getElementById('input-dm-verify').disabled = false;
 
-        const currentBox = pending[0];
-        
-        // Update instruction
+        // Update instruction showing all pending boxes in a list
+        let pendingListHtml = pending.map(box => `
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                <div>
+                    <span class="text-accent font-mono text-bold">${box.id}</span>
+                    <span style="font-size:0.75rem; color:var(--color-text-muted); margin-left: 10px;">Nivel ${box.level} - Cara ${box.face}</span>
+                </div>
+                <span class="font-mono text-bold" style="color:var(--color-primary);">${box.boxCode}</span>
+            </div>
+        `).join('');
+
         instPane.innerHTML = `
             <div class="extraction-card">
-                <span class="badge badge-primary">EXTRACCIÓN EN CURSO</span>
-                <h4 class="mt-xs">Coordenada a extraer: <strong class="text-accent font-mono" style="font-size:1.4rem;">${currentBox.id}</strong></h4>
-                <div class="detail-row mt-sm">
-                    <span>Ubicación:</span>
-                    <span>Nivel ${currentBox.level} - Cara ${currentBox.face} - Columna ${currentBox.column}</span>
+                <span class="badge badge-primary">MUESTRAS PENDIENTES DE ESCANEO</span>
+                <p class="small text-muted mt-xs">Pistolee cualquiera de las siguientes cajas seleccionadas de la muestra (en cualquier orden):</p>
+                <div style="max-height: 200px; overflow-y: auto; margin-top: 10px; display: flex; flex-direction: column; gap: 4px;">
+                    ${pendingListHtml}
                 </div>
-                <div class="detail-row">
-                    <span>Código de Caja (10D):</span>
-                    <span class="font-mono text-bold text-accent">${currentBox.boxCode}</span>
-                </div>
-                ${currentBox.type === 'interior' ? `
-                <div class="warning-alert-orange mt-xs" style="padding:8px 12px; font-size:0.75rem;">
-                    <strong>Atención Movilizador:</strong> Recuerde desmontar las cajas exteriores bloqueantes de ese nivel antes de retirar la caja ciega.
-                </div>` : ''}
             </div>
         `;
 
-        // Render fast simulation scan buttons
+        // Render fast simulation scan buttons for all pending boxes
+        let suggestScanButtons = pending.map(box => `
+            <button class="btn-suggested-scan" onclick="app.simulateVerificationScan('${box.boxCode}')" style="margin-right: 6px; margin-top: 6px;">Escuchar/Simular ${box.id}</button>
+        `).join('');
+
         suggestPane.innerHTML = `
-            <button class="btn-suggested-scan" onclick="app.simulateVerificationScan('${currentBox.boxCode}')">Pistolear Correcto (${currentBox.boxCode})</button>
-            <button class="btn-suggested-scan" onclick="app.simulateVerificationScan('8000000000')">Pistolear Código Incorrecto (Simular Error)</button>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                ${suggestScanButtons}
+                <button class="btn-suggested-scan" onclick="app.simulateVerificationScan('8000000000')" style="background-color:rgba(230,95,43,0.1); border-color:var(--color-danger); color:var(--color-danger); margin-top:6px;">Simular Código Erróneo (Error)</button>
+            </div>
         `;
 
         document.getElementById('input-dm-verify').value = '';
@@ -1575,47 +1705,52 @@ class AppController {
     verifyBoxScan() {
         const inputVal = document.getElementById('input-dm-verify').value.trim();
         
-        // Get current expected box
-        const selected = this.state.boxes.filter(b => b.status === 'selected');
-        if (selected.length === 0) return;
-
-        const expectedBox = selected[0];
+        // Get all currently pending selected boxes
+        const pending = this.state.boxes.filter(b => b.status === 'selected');
+        if (pending.length === 0) return;
 
         if (inputVal === '') {
             alert("Ingrese o pistolee el código Data Matrix de la caja extraída.");
             return;
         }
 
-        if (inputVal.toUpperCase() !== expectedBox.boxCode.toUpperCase()) {
+        // Search for a box in the pending sample that matches the scanned code
+        const matchedBox = pending.find(b => b.boxCode.toUpperCase() === inputVal.toUpperCase());
+
+        if (!matchedBox) {
             // Scanner Warning Buzzer Sound (Chicharra)
             this.state.soundManager.playBuzzer();
             this.state.scannedVerificationError = true;
 
-            this.logConsole(`[SCAN ERROR] Movilizador pistoleó código incorrecto: ${inputVal}. Se esperaba el código 10D: ${expectedBox.boxCode} en coord ${expectedBox.id}.`, 'error');
+            this.logConsole(`[SCAN ERROR] Movilizador pistoleó un código incorrecto o fuera de muestra: ${inputVal}.`, 'error');
 
-            alert(`🚨 ERROR DE EXTRACCIÓN (CHICHARRA)\n\nEl operador extrajo una caja distinta a la coordenada pinchada en la foto.\n\nCódigo Leído: ${inputVal}\nCódigo Requerido (10D): ${expectedBox.boxCode}\nCoordenada Requerida: ${expectedBox.id}\n\nPor favor devuelva la caja errónea y extraiga la correcta.`);
+            alert(`🚨 ERROR DE EXTRACCIÓN (CHICHARRA)\n\nEl operador extrajo una caja que no coincide con ninguna coordenada pinchada de la muestra.\n\nCódigo Leído: ${inputVal}\n\nPor favor devuelva la caja errónea y extraiga la correcta.`);
             return;
         }
 
         // Correct box scan!
         this.state.soundManager.playBeep();
         this.state.scannedVerificationError = false;
-        this.logConsole(`[SCAN OK] Pistoleo correcto de caja coordenada ${expectedBox.id}. Código 10D: ${expectedBox.boxCode} verificado.`);
+        this.logConsole(`[SCAN OK] Pistoleo correcto de caja coordenada ${matchedBox.id}. Código 10D: ${matchedBox.boxCode} verificado.`);
+
+        // Store the ID of the box currently being evaluated
+        this.state.currentlyEvaluatingBoxId = matchedBox.id;
 
         // Open evaluation window
-        document.getElementById('eval-box-id-lbl').innerText = expectedBox.id;
+        document.getElementById('eval-box-id-lbl').innerText = matchedBox.id;
         document.getElementById('box-evaluation-pane').style.display = 'block';
     }
 
     evaluateBox(result) {
-        const selected = this.state.boxes.filter(b => b.status === 'selected');
-        if (selected.length === 0) return;
-
-        const currentBox = selected[0];
+        const boxId = this.state.currentlyEvaluatingBoxId;
+        const currentBox = this.state.boxes.find(b => b.id === boxId);
+        if (!currentBox) return;
         
         // Set evaluation state
         currentBox.status = result === 'APPROVED' ? 'approved' : 'rejected';
         currentBox.evalState = result;
+        
+        this.state.currentlyEvaluatingBoxId = null;
         
         this.state.soundManager.playBeep();
         this.logConsole(`[SAG INSPECTOR] Caja ${currentBox.id} evaluada. Dictamen: ${result}.`);
@@ -1806,10 +1941,13 @@ class AppController {
     }
 
     resetAll() {
+        this.stopCamera();
         this.state.activeFolio = null;
         this.state.activePackingList = null;
         this.state.packingListApproved = false;
         this.state.capturedFaces = { A: false, B: false, C: false, D: false };
+        this.state.capturedPhotos = {};
+        this.state.currentlyEvaluatingBoxId = null;
         this.state.physicalBoxCount = 0;
         this.state.cuadraturaCompleted = false;
         this.state.cuadraturaAdjusted = false;
