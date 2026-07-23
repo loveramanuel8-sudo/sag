@@ -81,12 +81,17 @@ const AppState = {
     palletStates: {},    // e.g. { '1020013265': 'pending', '1020013267': 'pending' }
     completedPalletInspections: {}, // e.g. { '1020013265': { boxes: [...], dictamen: 'APROBADO' } }
 
-    // Captured faces (Step 3)
+    // Pre-captured database for Vision and IA
+    palletPhotosDatabase: {}, // folio -> { A: dataUrl, B: dataUrl, C: dataUrl, D: dataUrl }
+    palletBoxesDatabase: {},  // folio -> Array of boxes
+    palletCuadraturaDatabase: {}, // folio -> { completed: bool, adjusted: bool, theoretical: int, physical: int }
+
+    // Captured faces (legacy, but keep for compatibility or reset)
     capturedFaces: {
-        A: false,
-        B: false,
-        C: false,
-        D: false
+        A: true,
+        B: true,
+        C: true,
+        D: true
     },
     
     // Camera state
@@ -95,7 +100,7 @@ const AppState = {
     capturedPhotos: {},
     currentlyEvaluatingBoxId: null,
     
-    // Conteo & Cuadratura (Step 3)
+    // Conteo & Cuadratura
     physicalBoxCount: 0,
     cuadraturaCompleted: false,
     cuadraturaAdjusted: false,
@@ -106,13 +111,13 @@ const AppState = {
     // Boxes database for the current pallet
     boxes: [], // Will store all 184 box models of the current activeFolio
     
-    // Inspector Selection (Step 5)
+    // Inspector Selection
     inspectorActiveFace: 'A',
     selectedBoxId: null,
     blindLevelSelected: null,
     blindBoxSelectedId: null,
     
-    // Physical Inspection (Step 6)
+    // Physical Inspection
     currentExtractionIndex: 0,
     scannedVerificationError: false
 };
@@ -199,6 +204,112 @@ const PackingListMockData = {
         ]
     }
 };
+
+// --- Pallet Mock Photo Database Generator ---
+function generatePalletMockPhotos(folio) {
+    const photos = {};
+    const faces = ['A', 'B', 'C', 'D'];
+    const faceNames = { A: 'Frontal', B: 'Lateral D', C: 'Posterior', D: 'Lateral I' };
+    
+    faces.forEach(face => {
+        // Create canvas dynamically to generate a realistic pallet photo mockup
+        const canvas = document.createElement('canvas');
+        canvas.width = 400;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+        
+        // Background gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, 600);
+        if (face === 'A') {
+            grad.addColorStop(0, '#1e293b');
+            grad.addColorStop(1, '#0f172a');
+        } else if (face === 'B') {
+            grad.addColorStop(0, '#0f172a');
+            grad.addColorStop(1, '#1e293b');
+        } else if (face === 'C') {
+            grad.addColorStop(0, '#1e1b4b');
+            grad.addColorStop(1, '#0f172a');
+        } else {
+            grad.addColorStop(0, '#090d16');
+            grad.addColorStop(1, '#1e293b');
+        }
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 400, 600);
+        
+        // Draw wood pallet base
+        ctx.fillStyle = '#8b5a2b';
+        ctx.fillRect(0, 570, 400, 30);
+        ctx.fillStyle = '#5c3a1a';
+        ctx.fillRect(0, 570, 400, 3);
+        
+        // Draw exposed boxes rows (outline)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = 1.5;
+        for (let y = 30; y < 570; y += 45) {
+            // Draw boxes
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
+            ctx.fillRect(35, y, 155, 38);
+            ctx.strokeRect(35, y, 155, 38);
+            
+            ctx.fillRect(210, y, 155, 38);
+            ctx.strokeRect(210, y, 155, 38);
+            
+            // Draw a white barcode label representation on each box
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(150, y + 10, 30, 18);
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(153, y + 12, 2, 14);
+            ctx.fillRect(157, y + 12, 4, 14);
+            ctx.fillRect(163, y + 12, 1, 14);
+            ctx.fillRect(166, y + 12, 3, 14);
+            ctx.fillRect(171, y + 12, 2, 14);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(220, y + 10, 30, 18);
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(223, y + 12, 3, 14);
+            ctx.fillRect(228, y + 12, 1, 14);
+            ctx.fillRect(231, y + 12, 4, 14);
+            ctx.fillRect(237, y + 12, 2, 14);
+            ctx.fillRect(241, y + 12, 2, 14);
+        }
+        
+        // Green horizontal strapping bands (zunchos)
+        ctx.fillStyle = 'rgba(39, 174, 96, 0.7)';
+        ctx.fillRect(0, 120, 400, 6);
+        ctx.fillRect(0, 230, 400, 6);
+        ctx.fillRect(0, 340, 400, 6);
+        ctx.fillRect(0, 450, 400, 6);
+        
+        // Cardboard corner boards (esquineros)
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(10, 0, 16, 570);
+        ctx.fillRect(374, 0, 16, 570);
+        
+        // Watermark texts
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.font = '900 24px Outfit, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PRIZE SMART VISION', 200, 95);
+        ctx.fillText('ESTACIÓN INTEGRAL IA', 200, 435);
+        
+        ctx.fillStyle = 'rgba(58, 124, 165, 0.85)';
+        ctx.font = 'bold 20px Outfit, sans-serif';
+        ctx.fillText(`PALLET FOLIO: ${folio}`, 200, 290);
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+        ctx.font = '600 15px Outfit, sans-serif';
+        ctx.fillText(`Cara ${face} (${faceNames[face]})`, 200, 320);
+        
+        const timestamp = new Date().toLocaleString('es-CL');
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.8)';
+        ctx.font = 'bold 11px JetBrains Mono, monospace';
+        ctx.fillText(`✔ PROCESADO POR IA - ${timestamp}`, 200, 545);
+        
+        photos[face] = canvas.toDataURL('image/jpeg');
+    });
+    return photos;
+}
 
 // --- Box Layout Model Generator ---
 function generatePalletBoxes(folio, packingListName) {
@@ -324,30 +435,31 @@ class AppController {
 
     // Step navigation control
     setStep(stepNum) {
-        // Enforce validations to prevent moving ahead illegally (except step 7 History)
-        if (stepNum !== 7) {
+        // Enforce validations to prevent moving ahead illegally (skip for Historial step 5)
+        if (stepNum !== 5) {
             if (stepNum > 1 && !this.state.packingListApproved) {
                 this.alertNoPermission("Debe aprobar y habilitar el Packing List por la Contraparte SAG en el Paso 1.");
                 return;
             }
-            if (stepNum > 2 && !this.state.activeFolio) {
-                this.alertNoPermission("El tarjador debe pistolear y validar el folio del pallet en el Paso 2.");
+            if (stepNum > 2 && !this.isVisionDbCuadraturaCompleted()) {
+                this.alertNoPermission("Debe resolver todos los descuadres en la Base de Datos de Fotos e IA (Paso 2) antes de continuar.");
                 return;
             }
-            if (stepNum > 3 && !this.state.cuadraturaCompleted) {
-                this.alertNoPermission("Debe completar la toma de fotos de las 4 caras y cuadrar el lote en el Paso 3.");
-                return;
-            }
-            if (stepNum > 4 && !this.state.overlayDetectionsGenerated) {
-                this.alertNoPermission("Debe ejecutar el Motor de Visión e IA en el Paso 4 para decodificar las etiquetas.");
-                return;
-            }
-            if (stepNum > 5) {
-                // Count selected samples
-                const selected = this.state.boxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected');
-                if (selected.length < 4) {
-                    this.alertNoPermission("El Inspector SAG debe seleccionar al menos 4 cajas en la tablet para muestrear (Paso 5) antes de proceder.");
+            if (stepNum > 3) {
+                // Count inspected pallets and their selected boxes
+                const inspectedFolios = this.state.sapPalletSample;
+                if (inspectedFolios.length === 0) {
+                    this.alertNoPermission("Debe seleccionar al menos 1 pallet para inspección en la Tablet (Paso 3).");
                     return;
+                }
+                // Check that all selected pallets have at least 4 boxes selected
+                for (const f of inspectedFolios) {
+                    const boxes = this.state.palletBoxesDatabase[f] || [];
+                    const selected = boxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected').length;
+                    if (selected < 4) {
+                        this.alertNoPermission(`El Inspector SAG debe seleccionar al menos 4 cajas para el Pallet ${f} en la tablet (Paso 3).`);
+                        return;
+                    }
                 }
             }
         }
@@ -356,7 +468,7 @@ class AppController {
         this.state.activeStep = stepNum;
         
         // Update sidebar UI classes
-        for (let i = 1; i <= 7; i++) {
+        for (let i = 1; i <= 5; i++) {
             const btn = document.getElementById(`btn-step-${i}`);
             if (btn) {
                 if (i === stepNum) {
@@ -380,16 +492,21 @@ class AppController {
     onViewEnter(stepNum) {
         this.updateLockStatus();
         if (stepNum === 2) {
-            document.getElementById('input-barcode').focus();
+            this.loadVisionDbView();
+        } else if (stepNum === 3) {
+            this.loadInspectorTabletView();
         } else if (stepNum === 4) {
-            this.simulateNeuralProcess();
-        } else if (stepNum === 5) {
-            this.loadInspectorPalletView();
-        } else if (stepNum === 6) {
             this.loadPhysicalVerificationView();
-        } else if (stepNum === 7) {
+        } else if (stepNum === 5) {
             this.loadHistoryView();
         }
+    }
+
+    isVisionDbCuadraturaCompleted() {
+        if (!this.state.activePackingList) return false;
+        // Verify if all pallets in the packing list have a completed cuadratura (no discrepancies)
+        const database = this.state.palletCuadraturaDatabase;
+        return Object.values(database).every(status => status.completed);
     }
 
     alertNoPermission(msg) {
@@ -427,6 +544,30 @@ class AppController {
 
         const data = PackingListMockData[key];
         this.state.activePackingList = { name: key, ...data };
+
+        // Initialize pre-captured databases for all pallets in the Packing List
+        this.state.palletPhotosDatabase = {};
+        this.state.palletBoxesDatabase = {};
+        this.state.palletCuadraturaDatabase = {};
+        
+        data.palletsList.forEach(p => {
+            this.state.palletPhotosDatabase[p.folio] = generatePalletMockPhotos(p.folio);
+            this.state.palletBoxesDatabase[p.folio] = generatePalletBoxes(p.folio, key);
+            
+            // Set up default cuadratura: default is matching except for test discrepancy
+            const expectedCount = this.state.palletBoxesDatabase[p.folio].length;
+            let physicalCount = expectedCount;
+            if (key === 'solicitud_5345_error' && p.folio === '1020006903') {
+                physicalCount = 180; // Discrepancy for testing
+            }
+            
+            this.state.palletCuadraturaDatabase[p.folio] = {
+                completed: physicalCount === expectedCount,
+                adjusted: false,
+                theoretical: expectedCount,
+                physical: physicalCount
+            };
+        });
 
         // Populate Solicitud table details
         document.getElementById('td-solic-no').innerText = data.solicitudNo;
@@ -701,591 +842,178 @@ class AppController {
         // Unlock next step
         document.getElementById('lock-step-2').innerText = '🔓';
         
-        // Auto-navigate to step 2
+        // Auto-navigate
         this.setStep(2);
     }
 
-    renderSapRequestedPalletsList() {
-        const list = document.getElementById('sap-requested-folios-list');
-        if (!list) return;
+    // --- STEP 2 LOGIC: BASE DE DATOS DE VISIÓN E IA ---
+    loadVisionDbView() {
+        const grid = document.getElementById('db-pallets-grid');
+        if (!grid) return;
 
-        list.innerHTML = '';
-        this.state.sapPalletSample.forEach(f => {
-            const state = this.state.palletStates[f];
+        grid.innerHTML = '';
+        
+        if (!this.state.activePackingList) {
+            grid.innerHTML = '<div class="text-center text-muted p-md">No hay datos de lote cargados.</div>';
+            return;
+        }
+
+        const pallets = this.state.activePackingList.palletsList || [];
+        const btnApprove = document.getElementById('btn-approve-db');
+        
+        let allCompleted = true;
+
+        pallets.forEach(p => {
+            const photos = this.state.palletPhotosDatabase[p.folio] || {};
+            const cuadratura = this.state.palletCuadraturaDatabase[p.folio] || { completed: true, theoretical: p.cajas, physical: p.cajas };
             
-            let badgeClass = 'pending';
-            let badgeText = 'Pendiente';
-            if (state === 'active') { badgeClass = 'pending'; badgeText = 'En Proceso'; }
-            if (state === 'completed') { badgeClass = 'approved'; badgeText = 'Inspeccionado'; }
+            if (!cuadratura.completed) {
+                allCompleted = false;
+            }
 
-            const li = document.createElement('li');
-            li.style.display = 'flex';
-            li.style.justifyContent = 'space-between';
-            li.style.alignItems = 'center';
-            li.style.padding = '8px 12px';
-            li.style.background = 'var(--color-bg-card-hover)';
-            li.style.border = '1px solid var(--color-border)';
-            li.style.borderRadius = '4px';
-            li.style.marginTop = '4px';
+            const card = document.createElement('div');
+            card.className = 'card p-md';
+            card.style.border = cuadratura.completed ? '1px solid var(--color-border)' : '2px solid var(--color-danger)';
+            card.style.background = 'var(--color-bg-card-hover)';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+            card.style.gap = '10px';
 
-            li.innerHTML = `
-                <span class="font-mono text-bold" style="letter-spacing:1px;">Folio: ${f}</span>
-                <span class="badge-item-status ${badgeClass}">${badgeText}</span>
+            const statusClass = cuadratura.completed ? 'approved' : 'rejected';
+            const statusText = cuadratura.completed ? '✔️ CUADRADO' : '🚨 DESCUADRE';
+
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--color-border); padding-bottom: 6px;">
+                    <span class="font-mono text-bold text-accent" style="font-size:1.1rem;">Folio: ${p.folio}</span>
+                    <span class="badge-item-status ${statusClass}" style="font-size:0.7rem; padding: 2px 6px;">${statusText}</span>
+                </div>
+                
+                <div style="font-size:0.8rem; color:var(--color-text-muted); display:flex; flex-direction:column; gap:4px;">
+                    <span><strong>Productor:</strong> ${p.productor}</span>
+                    <span><strong>Calificación CSG:</strong> <span class="font-mono">${p.csg}</span></span>
+                    <span><strong>Cajas ERP (Teórico):</strong> <span class="font-mono text-bold text-accent">${cuadratura.theoretical}</span></span>
+                    <span><strong>Físico (Conteo IA):</strong> <span class="font-mono text-bold ${cuadratura.completed ? 'text-green' : 'text-red'}">${cuadratura.physical}</span></span>
+                </div>
+
+                <!-- 4 Faces thumbnails preview from database -->
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 4px 0;">
+                    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow:hidden; aspect-ratio: 2/3; position:relative;">
+                        <img src="${photos.A}" style="width:100%; height:100%; object-fit:cover;">
+                        <span style="position:absolute; bottom:2px; left:2px; font-size:0.55rem; background:rgba(0,0,0,0.8); color:#fff; padding:1px 3px; border-radius:2px; font-weight:800;">A</span>
+                    </div>
+                    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow:hidden; aspect-ratio: 2/3; position:relative;">
+                        <img src="${photos.B}" style="width:100%; height:100%; object-fit:cover;">
+                        <span style="position:absolute; bottom:2px; left:2px; font-size:0.55rem; background:rgba(0,0,0,0.8); color:#fff; padding:1px 3px; border-radius:2px; font-weight:800;">B</span>
+                    </div>
+                    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow:hidden; aspect-ratio: 2/3; position:relative;">
+                        <img src="${photos.C}" style="width:100%; height:100%; object-fit:cover;">
+                        <span style="position:absolute; bottom:2px; left:2px; font-size:0.55rem; background:rgba(0,0,0,0.8); color:#fff; padding:1px 3px; border-radius:2px; font-weight:800;">C</span>
+                    </div>
+                    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow:hidden; aspect-ratio: 2/3; position:relative;">
+                        <img src="${photos.D}" style="width:100%; height:100%; object-fit:cover;">
+                        <span style="position:absolute; bottom:2px; left:2px; font-size:0.55rem; background:rgba(0,0,0,0.8); color:#fff; padding:1px 3px; border-radius:2px; font-weight:800;">D</span>
+                    </div>
+                </div>
+                
+                ${!cuadratura.completed ? `
+                <div class="warning-alert-red" style="padding:10px; margin-top:4px; font-size:0.75rem; border-radius:var(--radius-sm); display:flex; flex-direction:column; gap:6px; background: rgba(230,95,43,0.08);">
+                    <strong style="color:var(--color-danger); font-size:0.75rem;">ACCIÓN CORRECTIVA OPERATIVA REQUERIDA:</strong>
+                    <span>La cuadratura detectó un descuadre físico. El ERP declara ${cuadratura.theoretical} pero la IA contó ${cuadratura.physical} cajas.</span>
+                    <div style="display:flex; gap:6px; margin-top:2px;">
+                        <button class="btn btn-small btn-accent" onclick="app.adjustPalletERP('${p.folio}')" style="font-size:0.7rem; padding:4px 8px; flex:1;">Ajustar ERP (Reemitir)</button>
+                        <button class="btn btn-small btn-outline-red" onclick="app.adjustPalletPhysical('${p.folio}')" style="font-size:0.7rem; padding:4px 8px; flex:1; border-color:var(--color-danger); color:var(--color-danger);">Reacomodar Físico</button>
+                    </div>
+                </div>
+                ` : cuadratura.adjusted ? `
+                <div style="font-size:0.7rem; color:var(--color-primary); font-weight:800; background:rgba(60,138,72,0.1); padding:6px; border-radius:4px; text-align:center; border: 1px solid var(--color-primary);">
+                    ✓ RESOLUCIÓN APLICADA Y CUADRADA
+                </div>
+                ` : `
+                <div style="font-size:0.7rem; color:var(--color-text-muted); text-align:center; padding:6px; background: rgba(255,255,255,0.02); border-radius:4px; border:1px solid rgba(255,255,255,0.05);">
+                    ✓ Pallet cuadrado en línea de Visión
+                </div>
+                `}
             `;
-            list.appendChild(li);
+            grid.appendChild(card);
         });
 
-        // Populate dynamic test hints based on what the inspector actually selected
-        const hintsList = document.getElementById('step2-dynamic-hints');
-        if (hintsList) {
-            hintsList.innerHTML = '';
-            
-            this.state.sapPalletSample.forEach(f => {
-                const li = document.createElement('li');
-                li.style.display = 'flex';
-                li.style.alignItems = 'center';
-                li.style.gap = '8px';
-                
-                const isCompleted = this.state.palletStates[f] === 'completed';
-                const styleClass = isCompleted ? 'style="opacity: 0.5;"' : '';
-                
-                li.innerHTML = `
-                    <span ${styleClass}>Pallet Folio:</span>
-                    <code onclick="app.setDemoFolio('${f}')" class="font-mono text-bold" style="cursor:pointer; color:var(--color-primary); background:var(--color-bg-card); padding:2px 6px; border:1px solid var(--color-border); border-radius:4px;">${f}</code>
-                    ${isCompleted ? '<span class="text-green" style="font-size:0.85rem;">✔️ Listo</span>' : '<span class="text-warning" style="font-size:0.85rem;">⌛ Pendiente</span>'}
-                `;
-                hintsList.appendChild(li);
-            });
-
-            // Always add a helper for wrong scan testing
-            const liWrong = document.createElement('li');
-            liWrong.style.marginTop = '8px';
-            liWrong.style.borderTop = '1px dashed var(--color-border)';
-            liWrong.style.paddingTop = '8px';
-            liWrong.innerHTML = `
-                <span>Folio No Muestra (Error):</span>
-                <code onclick="app.setDemoFolio('9999999999')" class="font-mono text-bold" style="cursor:pointer; color:var(--color-danger); background:var(--color-bg-card); padding:2px 6px; border:1px solid var(--color-border); border-radius:4px;">9999999999</code>
-            `;
-            hintsList.appendChild(liWrong);
+        if (btnApprove) {
+            btnApprove.disabled = !allCompleted;
         }
+
+        // Enable sidebar lock step 3 if all completed
+        const lock3 = document.getElementById('lock-step-3');
+        if (lock3) lock3.innerText = allCompleted ? '🔓' : '🔒';
     }
 
-    // STEP 2 LOGIC: TARJADOR
-    setDemoFolio(val) {
-        document.getElementById('input-barcode').value = val;
+    adjustPalletERP(folio) {
+        const cuadratura = this.state.palletCuadraturaDatabase[folio];
+        if (!cuadratura) return;
+
+        // Set theoretical equal to physical
+        cuadratura.theoretical = cuadratura.physical;
+        cuadratura.completed = true;
+        cuadratura.adjusted = true;
+
+        // Update the active packing list cajas count total
+        let totalCajas = 0;
+        this.state.activePackingList.palletsList.forEach(p => {
+            const cu = this.state.palletCuadraturaDatabase[p.folio];
+            totalCajas += cu ? cu.theoretical : p.cajas;
+        });
+        this.state.activePackingList.cajas = totalCajas;
+
+        // Re-generate boxes for this pallet to match 180 boxes
+        const boxes = this.state.palletBoxesDatabase[folio];
+        if (boxes) {
+            // Remove level 12 boxes from perimeter (4 boxes)
+            this.state.palletBoxesDatabase[folio] = boxes.filter(b => b.level !== 12 || b.type !== 'exterior');
+        }
+
         this.state.soundManager.playBeep();
+        this.logConsole(`[CONTRAPARTE SAG] Planilla reemitida en ERP. Pallet ${folio} ajustado a ${cuadratura.physical} cajas.`);
+        this.loadVisionDbView();
     }
 
-    scanFolio() {
-        const inputVal = document.getElementById('input-barcode').value.trim();
+    adjustPalletPhysical(folio) {
+        const cuadratura = this.state.palletCuadraturaDatabase[folio];
+        if (!cuadratura) return;
 
-        if (inputVal.length !== 10 || isNaN(inputVal)) {
-            this.state.soundManager.playBuzzer();
-            this.logConsole(`[ERROR SCAN] El folio debe tener exactamente 10 dígitos numéricos.`, 'error');
-            alert("Error: El Folio debe constar de 10 dígitos numéricos.");
+        // Set physical equal to theoretical (re-arrange stowing)
+        cuadratura.physical = cuadratura.theoretical;
+        cuadratura.completed = true;
+        cuadratura.adjusted = true;
+
+        this.state.soundManager.playBeep();
+        this.logConsole(`[OPERADOR] Cajas reacomodadas en pallet físico ${folio}. Conteo verificado a ${cuadratura.theoretical} cajas.`);
+        this.loadVisionDbView();
+    }
+
+    approveVisionDb() {
+        if (!this.isVisionDbCuadraturaCompleted()) {
+            alert("No puede aprobar la base de fotos si existen descuadres de cajas en el lote.");
             return;
         }
 
-        // Verify that this folio was requested by SAP
-        if (!this.state.sapPalletSample.includes(inputVal)) {
-            this.state.soundManager.playBuzzer();
-            this.logConsole(`[ERROR CRUCE] Folio ${inputVal} NO solicitado por SAP para inspección del lote.`, 'error');
-            
-            const couplingCard = document.getElementById('coupling-card');
-            const couplingPulse = document.getElementById('coupling-pulse');
-            const couplingText = document.getElementById('coupling-text');
-
-            couplingCard.style.borderColor = 'var(--color-danger)';
-            couplingPulse.className = 'circle-pulse red';
-            couplingText.innerText = "Error: Folio no solicitado por SAP";
-            
-            alert("Error de Acoplamiento: SAP no ha solicitado inspeccionar el folio " + inputVal + ".");
-            return;
-        }
-
-        // Verify it is not already completed
-        if (this.state.palletStates[inputVal] === 'completed') {
-            this.state.soundManager.playBuzzer();
-            alert("El folio " + inputVal + " ya fue inspeccionado completamente.");
-            return;
-        }
-
-        // Successfully coupled!
-        this.state.activeFolio = inputVal;
-        this.state.palletStates[inputVal] = 'active';
-        document.getElementById('header-folio').innerText = inputVal;
-        
-        // Generate boxes database
-        this.state.boxes = generatePalletBoxes(inputVal, this.state.activePackingList.name);
-
-        const couplingCard = document.getElementById('coupling-card');
-        const couplingPulse = document.getElementById('coupling-pulse');
-        const couplingText = document.getElementById('coupling-text');
-
-        couplingCard.style.borderColor = 'var(--color-primary)';
-        couplingPulse.className = 'circle-pulse green';
-        couplingText.innerHTML = `Pallet Vinculado Exitosamente<br><small class="text-accent font-mono">Folio: ${inputVal}</small>`;
-
+        // Advance to Step 3
         this.state.soundManager.playBeep();
-        this.logConsole(`[TARJADOR] Folio ${inputVal} vinculado contra muestra de SAP.`);
-        
-        this.renderSapRequestedPalletsList();
-
-        document.getElementById('lock-step-3').innerText = '🔓';
-
-        // Navigate automatically
-        setTimeout(() => {
-            this.setStep(3);
-        }, 1200);
+        this.logConsole(`[VISIÓN DB] Base de datos de fotos del lote aprobada por Inspector.`);
+        this.setStep(3);
     }
 
-    // STEP 3 LOGIC: MODULO DE VISION
-    simulateCapture(face) {
-        if (this.state.capturedFaces[face]) return;
-
-        this.state.capturedFaces[face] = true;
-        
-        // Update label to show folio association
-        const label = document.getElementById(`cap-label-${face}`);
-        if (label) {
-            label.innerText = `CARA ${face} - Folio: ${this.state.activeFolio}`;
-        }
-
-        // Update thumbnail state
-        const item = document.getElementById(`cap-face-${face}`);
-        if (item) {
-            item.classList.add('done');
-        }
-        
-        const status = document.getElementById(`cap-status-${face}`);
-        if (status) {
-            status.innerText = "Capturado HD";
-        }
-
-        // Inject associated photo mockup with watermark
-        const thumb = document.getElementById(`thumb-${face}`);
-        if (thumb) {
-            const time = new Date().toLocaleTimeString('es-CL');
-            thumb.innerHTML = `
-                <div class="photo-watermark-overlay" style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#e0f2fe; border: 1.5px dashed #3a7ca5; border-radius: var(--radius-sm); padding: 15px; text-align:center; box-sizing:border-box;">
-                    <span style="font-size:0.6rem; font-weight:800; color:#1e4e70; letter-spacing:1.5px; text-transform:uppercase;">📷 CÁMARA HD VINCULADA</span>
-                    <span style="font-size:0.9rem; font-weight:800; color:#276330; margin-top:5px; font-family:var(--font-mono); letter-spacing:0.5px;">${this.state.activeFolio}</span>
-                    <span style="font-size:0.7rem; color:#475569; margin-top:2px; font-weight:600;">Cara ${face} (Costado)</span>
-                    <span style="font-size:0.55rem; color:#64748b; margin-top:6px; font-family:var(--font-mono);">Timestamp: ${time}</span>
-                    <span style="font-size:0.55rem; color:#22c55e; font-weight:800; margin-top:4px; letter-spacing:0.5px;">✔ REGISTRO ASOCIADO SAG</span>
-                </div>
-            `;
-        }
-        
-        this.state.soundManager.playBeep();
-        this.logConsole(`[VISIÓN] Foto HD capturada y vinculada para Folio ${this.state.activeFolio} (Cara ${face}).`);
-
-        // Check if all faces are captured
-        if (Object.values(this.state.capturedFaces).every(v => v === true)) {
-            this.evaluateCuadratura();
-        }
-    }
-
-    simulateAllCaptures() {
-        this.simulateCapture('A');
-        setTimeout(() => this.simulateCapture('B'), 250);
-        setTimeout(() => this.simulateCapture('C'), 500);
-        setTimeout(() => this.simulateCapture('D'), 750);
-    }
-
-    openCamera(face) {
-        this.state.cameraActiveFace = face;
-        document.getElementById('modal-camera-face-lbl').innerText = face;
-        document.getElementById('camera-error-msg').style.display = 'none';
-        
-        const video = document.getElementById('webcam-preview');
-        const videoContainer = document.getElementById('camera-video-container');
-        const snapBtn = document.getElementById('btn-snap-photo');
-        const fallbackBtn = document.getElementById('camera-fallback-btn');
-        const instructions = document.getElementById('camera-instructions-lbl');
-
-        // Reset visibility to default webcam mode
-        videoContainer.style.display = 'block';
-        snapBtn.style.display = 'block';
-        fallbackBtn.style.display = 'none';
-        instructions.innerText = "Enfoque el pallet (o use su cámara de pruebas) y presione el botón de captura.";
-
-        document.getElementById('modal-camera-capture').style.display = 'flex';
-
-        // Check if webcam API is available (only in secure contexts like localhost/https or on non-restricted browsers)
-        const isSecureContext = window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && isSecureContext) {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                .then(stream => {
-                    this.state.webcamStream = stream;
-                    video.srcObject = stream;
-                    video.play();
-                })
-                .catch(err => {
-                    console.error("Error accessing webcam", err);
-                    document.getElementById('camera-error-msg').style.display = 'block';
-                    document.getElementById('camera-error-msg').innerText = "Acceso a la cámara denegado o no disponible. Use la cámara del dispositivo de abajo.";
-                    
-                    videoContainer.style.display = 'none';
-                    snapBtn.style.display = 'none';
-                    fallbackBtn.style.display = 'block';
-                });
-        } else {
-            // Context is insecure (e.g. file:// protocol). Show uploader fallback directly.
-            document.getElementById('camera-error-msg').style.display = 'block';
-            document.getElementById('camera-error-msg').innerText = "Cámara en vivo bloqueada por seguridad del navegador (protocolo local file://). Presione el botón de abajo para activar su cámara nativa o cargar una foto.";
-            
-            videoContainer.style.display = 'none';
-            snapBtn.style.display = 'none';
-            fallbackBtn.style.display = 'block';
-            instructions.innerText = "Seleccione un archivo de imagen o tome una foto usando su cámara nativa.";
-        }
-    }
-
+    // Stubs for legacy hooks or camera modal compatibility
+    renderSapRequestedPalletsList() {}
     stopCamera() {
-        const video = document.getElementById('webcam-preview');
-        if (this.state.webcamStream) {
-            this.state.webcamStream.getTracks().forEach(track => track.stop());
-            this.state.webcamStream = null;
-        }
-        if (video) {
-            video.srcObject = null;
-        }
         this.closeModal('modal-camera-capture');
     }
-
-    snapPhoto() {
-        const face = this.state.cameraActiveFace;
-        const video = document.getElementById('webcam-preview');
-        
-        if (!video || !this.state.webcamStream) {
-            this.simulateCapture(face);
-            this.stopCamera();
-            return;
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        const dataUrl = canvas.toDataURL('image/jpeg');
-        
-        if (!this.state.capturedPhotos) {
-            this.state.capturedPhotos = {};
-        }
-        this.state.capturedPhotos[face] = dataUrl;
-
-        this.state.capturedFaces[face] = true;
-        
-        const label = document.getElementById(`cap-label-${face}`);
-        if (label) {
-            label.innerText = `CARA ${face} - Folio: ${this.state.activeFolio}`;
-        }
-
-        const item = document.getElementById(`cap-face-${face}`);
-        if (item) {
-            item.classList.add('done');
-        }
-        
-        const status = document.getElementById(`cap-status-${face}`);
-        if (status) {
-            status.innerText = "Capturado Real";
-        }
-
-        const thumb = document.getElementById(`thumb-${face}`);
-        if (thumb) {
-            thumb.innerHTML = `
-                <img src="${dataUrl}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:1;">
-                <div class="photo-watermark-overlay" style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; background:rgba(0,0,0,0.3); border-radius: var(--radius-sm); padding: 5px; text-align:center; box-sizing:border-box; position:absolute; top:0; left:0; z-index:2;">
-                    <span style="font-size:0.55rem; font-weight:800; color:#fff; font-family:var(--font-mono); text-shadow:1px 1px 2px #000;">${this.state.activeFolio} - Cara ${face}</span>
-                </div>
-            `;
-        }
-        
-        this.state.soundManager.playBeep();
-        this.logConsole(`[VISIÓN] Foto REAL capturada para Folio ${this.state.activeFolio} (Cara ${face}).`);
-
-        this.stopCamera();
-
-        if (Object.values(this.state.capturedFaces).every(v => v === true)) {
-            this.evaluateCuadratura();
-        }
-    }
-
-    handleCameraFileSelect(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        const face = this.state.cameraActiveFace;
-
-        reader.onload = (e) => {
-            const dataUrl = e.target.result;
-
-            if (!this.state.capturedPhotos) {
-                this.state.capturedPhotos = {};
-            }
-            this.state.capturedPhotos[face] = dataUrl;
-            this.state.capturedFaces[face] = true;
-
-            const label = document.getElementById(`cap-label-${face}`);
-            if (label) {
-                label.innerText = `CARA ${face} - Folio: ${this.state.activeFolio}`;
-            }
-
-            const item = document.getElementById(`cap-face-${face}`);
-            if (item) {
-                item.classList.add('done');
-            }
-            
-            const status = document.getElementById(`cap-status-${face}`);
-            if (status) {
-                status.innerText = "Capturado Nativo";
-            }
-
-            const thumb = document.getElementById(`thumb-${face}`);
-            if (thumb) {
-                thumb.innerHTML = `
-                    <img src="${dataUrl}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:1;">
-                    <div class="photo-watermark-overlay" style="width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; background:rgba(0,0,0,0.3); border-radius: var(--radius-sm); padding: 5px; text-align:center; box-sizing:border-box; position:absolute; top:0; left:0; z-index:2;">
-                        <span style="font-size:0.55rem; font-weight:800; color:#fff; font-family:var(--font-mono); text-shadow:1px 1px 2px #000;">${this.state.activeFolio} - Cara ${face}</span>
-                    </div>
-                `;
-            }
-            
-            this.state.soundManager.playBeep();
-            this.logConsole(`[VISIÓN] Foto NATAL/ARCHIVO capturada para Folio ${this.state.activeFolio} (Cara ${face}).`);
-
-            this.stopCamera();
-
-            // Clear input so selecting same file again triggers change event
-            event.target.value = '';
-
-            if (Object.values(this.state.capturedFaces).every(v => v === true)) {
-                this.evaluateCuadratura();
-            }
-        };
-
-        reader.readAsDataURL(file);
-    }
-
-    evaluateCuadratura() {
-        const expected = this.state.boxes.length;
-        
-        // Define physical counted boxes
-        let physical = expected;
-        if (this.state.activePackingList.name === 'solicitud_5345_error' && this.state.activeFolio === '1020006903' && !this.state.cuadraturaAdjusted) {
-            physical = 180; // Cause physical discrepancy
-        }
-
-        this.state.physicalBoxCount = physical;
-
-        document.getElementById('vision-cnt-theoretical').innerText = expected;
-        document.getElementById('vision-cnt-physical').innerText = physical;
-
-        const alertBox = document.getElementById('cuadratura-alert-box');
-        const alertTitle = document.getElementById('cuadratura-alert-title');
-        const alertDesc = document.getElementById('cuadratura-alert-desc');
-        const errorPane = document.getElementById('pane-error-cuadratura');
-        const btnNext = document.getElementById('btn-goto-step4');
-
-        if (physical === expected) {
-            this.state.cuadraturaCompleted = true;
-            
-            // Calculate breakdown
-            const total = this.state.boxes.length;
-            const exteriorCount = this.state.boxes.filter(b => b.type === 'exterior').length;
-            const interiorCount = this.state.boxes.filter(b => b.type === 'interior').length;
-
-            alertBox.className = "alert-box-success";
-            alertTitle.innerText = "Cuadratura Exitosa (100%)";
-            alertDesc.innerHTML = `
-                El conteo físico de cajas expuestas coincide perfectamente con las cajas teóricas.<br>
-                • <strong>Capturadas en Fotos (4 Caras):</strong> ${exteriorCount} cajas visibles con códigos de 10 números.<br>
-                • <strong>Determinadas Automáticamente como Ciegas:</strong> ${interiorCount} cajas en el interior de la estiba.
-            `;
-            errorPane.style.display = 'none';
-            btnNext.disabled = false;
-            
-            this.state.soundManager.playBeep();
-            this.logConsole(`[VISIÓN] Cuadratura exitosa. Mapeo: ${exteriorCount} expuestas detectadas, ${interiorCount} ciegas determinadas.`);
-            document.getElementById('lock-step-4').innerText = '🔓';
-        } else {
-            this.state.cuadraturaCompleted = false;
-            
-            alertBox.className = "alert-box-danger";
-            alertTitle.innerText = "Alerta: Descuadre de Lote";
-            alertDesc.innerText = `Discrepancia detectada. Conteo físico de IA es de ${physical} cajas, pero la Contraparte SAG declaró ${expected} cajas.`;
-            errorPane.style.display = 'block';
-            btnNext.disabled = true;
-
-            this.state.soundManager.playBuzzer();
-            this.logConsole(`[ALERTA DESCUADRE] Discrepancia: Físico ${physical} vs Teórico ${expected}. Proceso bloqueado.`, 'error');
-        }
-    }
-
-    // Corrective Actions for Cuadratura discrepancy
-    reemitirERP() {
-        // Adjust the ERP declarations to the physical count
-        this.state.activePackingList.cajas = this.state.physicalBoxCount;
-        this.state.cuadraturaAdjusted = true;
-        this.logConsole(`[CONTRAPARTE SAG] Planilla ajustada en ERP a ${this.state.physicalBoxCount} cajas para cuadrar lote.`);
-        
-        // Re-generate boxes to match new count of 180 boxes
-        // Let's remove 4 boxes from level 12 (telescopic top layer) to get exactly 180 boxes
-        this.state.boxes = this.state.boxes.filter(b => b.id !== 'N12-A-C1' && b.id !== 'N12-A-C2' && b.id !== 'N12-B-C1' && b.id !== 'N12-B-C2');
-        
-        // Refresh step 1 accordion view
-        const listContainer = document.getElementById('plist-boxes-list');
-        listContainer.innerHTML = '';
-        this.state.boxes.forEach(box => {
-            const item = document.createElement('div');
-            item.className = 'box-list-item-code ' + (box.type === 'exterior' ? 'exposed' : 'blind');
-            item.innerText = box.boxCode;
-            item.title = `Coord: ${box.id} (${box.type === 'exterior' ? 'Expuesta' : 'Ciega'})`;
-            listContainer.appendChild(item);
-        });
-
-        this.evaluateCuadratura();
-    }
-
-    reacomodarFisico() {
-        // Operator re-arranges the pallet to add missing 4 boxes
-        this.state.physicalBoxCount = this.state.boxes.length;
-        this.state.cuadraturaAdjusted = true;
-        this.logConsole(`[OPERADOR] Cajas reacomodadas en pallet físico. Conteo re-evaluado a ${this.state.boxes.length} cajas.`);
-        this.evaluateCuadratura();
-    }
-
-    goToStep4() {
-        this.setStep(4);
-    }
+    snapPhoto() {}
+    handleCameraFileSelect() {}
 
     goToTablet() {
         this.setStep(5);
     }
 
-    // STEP 4 LOGIC: MOTOR IA & OVERLAY
-    simulateNeuralProcess() {
-        const loader = document.getElementById('overlay-loader');
-        const stats = document.getElementById('overlay-stats');
-        const alertRes = document.getElementById('vision-resolution-alert');
-        const btnNext = document.getElementById('btn-goto-tablet');
-
-        loader.style.display = 'flex';
-        stats.style.display = 'none';
-        alertRes.style.display = 'none';
-        btnNext.disabled = true;
-
-        setTimeout(() => {
-            loader.style.display = 'none';
-            stats.style.display = 'grid';
-            alertRes.style.display = 'block';
-            btnNext.disabled = false;
-
-            const total = this.state.boxes.length;
-            const obstructed = this.state.boxes.filter(b => b.obstructedByZuncho).length;
-            const read = total - obstructed;
-
-            document.getElementById('stats-detected').innerText = total;
-            document.getElementById('stats-read').innerText = read;
-            document.getElementById('stats-obstructed').innerText = obstructed;
-
-            this.state.overlayDetectionsGenerated = true;
-            document.getElementById('lock-step-5').innerText = '🔓';
-
-            // Populate list of decoded Data Matrix codes on left panel
-            const codesListContainer = document.getElementById('decoded-codes-list-container');
-            const codesList = document.getElementById('decoded-codes-list');
-            if (codesListContainer && codesList) {
-                codesListContainer.style.display = 'block';
-                codesList.innerHTML = '';
-                // Filter boxes belonging to Cara A (which matches the wireframe)
-                const faceABoxes = this.state.boxes.filter(b => b.face === 'A');
-                faceABoxes.forEach(b => {
-                    const li = document.createElement('li');
-                    li.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
-                    li.style.padding = '4px 0';
-                    li.style.listStyle = 'none';
-                    li.innerHTML = `
-                        <strong style="color:var(--color-accent-sag);">${b.id.split('-')[0]}-${b.id.split('-')[2]}:</strong>
-                        <span style="font-family:var(--font-mono); font-size:0.7rem; ${b.obstructedByZuncho ? 'color:var(--color-danger); text-decoration:line-through; opacity:0.6;' : 'color:var(--color-primary); font-weight:700;'}">
-                            ${b.obstructedByZuncho ? 'OBSTRUIDO' : b.boxCode}
-                        </span>
-                    `;
-                    codesList.appendChild(li);
-                });
-            }
-
-            // Draw wireframe representation on step 4 right panel
-            this.drawPalletWireframe();
-            
-            this.state.soundManager.playBeep();
-            this.logConsole(`[MOTOR IA] Mapeo espacial completo. ${total} cajas localizadas. ${read} Data Matrix leídos. ${obstructed} obstruidos por zuncho verde.`);
-        }, 1200);
-    }
-
-    drawPalletWireframe() {
-        const container = document.getElementById('wireframe-viz');
-        container.innerHTML = '';
-
-        // If they captured a photo of Cara A, set it as the background of the wireframe viz!
-        if (this.state.capturedPhotos && this.state.capturedPhotos['A']) {
-            container.style.backgroundImage = `url(${this.state.capturedPhotos['A']})`;
-            container.style.backgroundSize = 'cover';
-            container.style.backgroundPosition = 'center';
-        } else {
-            container.style.backgroundImage = 'none';
-        }
-
-        // Draw 12 rows, each row showing Face A Col 1, Col 2 (just for simple visual)
-        for (let lvl = 12; lvl >= 1; lvl--) {
-            const row = document.createElement('div');
-            row.className = 'wireframe-level-row';
-
-            const levelStr = String(lvl).padStart(2, '0');
-            
-            // Col 1
-            const box1Id = `N${levelStr}-A-C1`;
-            const box1 = this.state.boxes.find(b => b.id === box1Id);
-            const box1Div = document.createElement('div');
-            box1Div.className = `wireframe-box ${box1 ? 'detected' : ''}`;
-            if (box1) {
-                if (box1.obstructedByZuncho) box1Div.classList.add('obstructed');
-                else box1Div.classList.add('decoded');
-                box1Div.innerText = `N${levelStr}-C1`;
-                box1Div.title = `Coordenada: ${box1Id}\nCódigo Data Matrix: ${box1.obstructedByZuncho ? 'Obstruido' : box1.boxCode}\nEstado: ${box1.obstructedByZuncho ? 'Requiere Lectura Manual' : 'Decodificado con Éxito'}`;
-                box1Div.style.cursor = 'help';
-            }
-            row.appendChild(box1Div);
-
-            // Col 2
-            const box2Id = `N${levelStr}-A-C2`;
-            const box2 = this.state.boxes.find(b => b.id === box2Id);
-            const box2Div = document.createElement('div');
-            box2Div.className = `wireframe-box ${box2 ? 'detected' : ''}`;
-            if (box2) {
-                if (box2.obstructedByZuncho) box2Div.classList.add('obstructed');
-                else box2Div.classList.add('decoded');
-                box2Div.innerText = `N${levelStr}-C2`;
-                box2Div.title = `Coordenada: ${box2Id}\nCódigo Data Matrix: ${box2.obstructedByZuncho ? 'Obstruido' : box2.boxCode}\nEstado: ${box2.obstructedByZuncho ? 'Requiere Lectura Manual' : 'Decodificado con Éxito'}`;
-                box2Div.style.cursor = 'help';
-            }
-            row.appendChild(box2Div);
-
-            container.appendChild(row);
-        }
-    }
-
-    goToTablet() {
-        this.setStep(5);
-    }
-
-    // STEP 5 LOGIC: TABLET INSPECTOR (OVERLAY & DIRECT SELECTION)
+    // --- STEP 3 LOGIC: TABLET INSPECTOR (MULTI-PALLET & BOX SELECTOR) ---
     changeInspectorFace(face) {
         this.state.inspectorActiveFace = face;
         
@@ -1293,24 +1021,119 @@ class AppController {
         document.querySelectorAll('.face-tab').forEach(tab => {
             tab.classList.remove('active');
         });
-        document.getElementById(`tab-face-${face}`).classList.add('active');
-        document.getElementById('active-inspector-face-lbl').innerText = `CARA ${face} (${face === 'A' ? 'Frontal' : face === 'B' ? 'Lateral D' : face === 'C' ? 'Posterior' : 'Lateral I'})`;
+        const tabEl = document.getElementById(`tab-face-${face}`);
+        if (tabEl) tabEl.classList.add('active');
+        
+        const faceLbl = document.getElementById('active-inspector-face-lbl');
+        if (faceLbl) {
+            faceLbl.innerText = `CARA ${face} (${face === 'A' ? 'Frontal' : face === 'B' ? 'Lateral D' : face === 'C' ? 'Posterior' : 'Lateral I'})`;
+        }
 
         this.loadInspectorPalletView();
         this.state.soundManager.playBeep();
     }
 
+    loadInspectorTabletView() {
+        const list = document.getElementById('tablet-pallets-list');
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        if (!this.state.activePackingList) {
+            list.innerHTML = '<div class="text-center text-muted p-md">No hay datos de lote.</div>';
+            return;
+        }
+
+        const pallets = this.state.activePackingList.palletsList || [];
+        
+        // Ensure activeFolio is set to something in the list if empty
+        if (!this.state.activeFolio && pallets.length > 0) {
+            this.state.activeFolio = pallets[0].folio;
+        }
+
+        pallets.forEach(p => {
+            const boxes = this.state.palletBoxesDatabase[p.folio] || [];
+            const selectedBoxes = boxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected');
+            
+            const isInspected = this.state.sapPalletSample.includes(p.folio);
+            
+            const item = document.createElement('div');
+            item.className = 'pallet-list-item' + (this.state.activeFolio === p.folio ? ' active' : '');
+            item.style.padding = '8px 12px';
+            item.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+            item.style.cursor = 'pointer';
+
+            item.innerHTML = `
+                <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                    <div style="display:flex; align-items:center; gap:8px; flex:1;" onclick="app.selectInspectorActivePallet('${p.folio}')">
+                        <input type="checkbox" class="pallet-chk-select" data-folio="${p.folio}" ${isInspected ? 'checked' : ''} onchange="app.togglePalletInspection(event, '${p.folio}')" style="cursor:pointer;">
+                        <div style="display:flex; flex-direction:column; margin-left:4px;">
+                            <span class="font-mono text-bold text-accent" style="font-size:0.95rem;">${p.folio}</span>
+                            <span style="font-size:0.7rem; color:var(--color-text-muted);">
+                                Muestreadas: <span class="font-mono ${selectedBoxes.length >= 4 ? 'text-green text-bold' : 'text-warning'}">${selectedBoxes.length}/4</span> cajas
+                            </span>
+                        </div>
+                    </div>
+                    <div onclick="app.selectInspectorActivePallet('${p.folio}')">
+                        ${selectedBoxes.length >= 4 ? '<span class="badge-item-status approved" style="font-size:0.6rem; padding:2px 5px;">Listo</span>' : '<span class="badge-item-status pending" style="font-size:0.6rem; padding:2px 5px;">Falta</span>'}
+                    </div>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+
+        // Update active pallet visual indicator label
+        const titleLbl = document.getElementById('active-inspector-pallet-lbl');
+        if (titleLbl) {
+            titleLbl.innerText = this.state.activeFolio;
+        }
+
+        this.loadInspectorPalletView();
+    }
+
+    selectInspectorActivePallet(folio) {
+        this.state.activeFolio = folio;
+        this.loadInspectorTabletView();
+    }
+
+    togglePalletInspection(event, folio) {
+        event.stopPropagation();
+        const checked = event.target.checked;
+        if (checked) {
+            if (!this.state.sapPalletSample.includes(folio)) {
+                this.state.sapPalletSample.push(folio);
+            }
+        } else {
+            this.state.sapPalletSample = this.state.sapPalletSample.filter(f => f !== folio);
+            // Revert boxes back to initial state
+            const boxes = this.state.palletBoxesDatabase[folio] || [];
+            boxes.forEach(b => {
+                const origSuggested = b.id.includes('N04-A-C1') || b.id.includes('N07-B-C2') || b.id.includes('N11-C-C1') || b.id.includes('N02-D-C2');
+                b.status = origSuggested ? 'suggested' : 'unselected';
+                b.manualReadConfirmed = false;
+            });
+        }
+        this.state.soundManager.playBeep();
+        this.loadInspectorTabletView();
+    }
+
     loadInspectorPalletView() {
         const container = document.getElementById('bounding-boxes-container');
+        if (!container) return;
         container.innerHTML = '';
 
-        const face = this.state.inspectorActiveFace;
+        const activeFolio = this.state.activeFolio;
+        if (!activeFolio) return;
 
-        // Set live photo background if captured
+        const face = this.state.inspectorActiveFace;
+        const boxes = this.state.palletBoxesDatabase[activeFolio] || [];
+
+        // Set photo background from database
         const bg = document.getElementById('pallet-image-bg');
         if (bg) {
-            if (this.state.capturedPhotos && this.state.capturedPhotos[face]) {
-                bg.style.backgroundImage = `url(${this.state.capturedPhotos[face]})`;
+            const photos = this.state.palletPhotosDatabase[activeFolio] || {};
+            if (photos[face]) {
+                bg.style.backgroundImage = `url(${photos[face]})`;
                 bg.style.backgroundSize = 'cover';
                 bg.style.backgroundPosition = 'center';
             } else {
@@ -1319,7 +1142,6 @@ class AppController {
         }
 
         // Render 12 levels for current face
-        // Level 12 down to 1
         for (let lvl = 12; lvl >= 1; lvl--) {
             const levelStr = String(lvl).padStart(2, '0');
             const rowDiv = document.createElement('div');
@@ -1327,17 +1149,16 @@ class AppController {
 
             for (let col = 1; col <= 2; col++) {
                 const boxId = `N${levelStr}-${face}-C${col}`;
-                const box = this.state.boxes.find(b => b.id === boxId);
+                const box = boxes.find(b => b.id === boxId);
 
                 if (box) {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'bounding-box-item';
                     itemDiv.id = `box-item-${boxId}`;
                     
-                    // Apply current statuses classes
                     if (box.status === 'suggested') itemDiv.classList.add('suggested');
                     if (box.status === 'selected') itemDiv.classList.add('selected');
-                    if (box.status === 'approved') itemDiv.classList.add('selected'); // Keep selected visual
+                    if (box.status === 'approved') itemDiv.classList.add('selected');
                     if (box.status === 'rejected') itemDiv.classList.add('rejected');
                     if (box.obstructedByZuncho && !box.manualReadConfirmed) {
                         itemDiv.classList.add('obstructed-overlay');
@@ -1351,7 +1172,6 @@ class AppController {
                     itemDiv.onclick = () => this.handleBoxClick(box.id);
                     rowDiv.appendChild(itemDiv);
                 } else {
-                    // Empty placeholder if box removed during ERP adjustments
                     const emptyDiv = document.createElement('div');
                     rowDiv.appendChild(emptyDiv);
                 }
@@ -1363,7 +1183,9 @@ class AppController {
     }
 
     handleBoxClick(boxId) {
-        const box = this.state.boxes.find(b => b.id === boxId);
+        const activeFolio = this.state.activeFolio;
+        const boxes = this.state.palletBoxesDatabase[activeFolio] || [];
+        const box = boxes.find(b => b.id === boxId);
         if (!box) return;
 
         // 1. Check if obstructed by zuncho
@@ -1376,14 +1198,12 @@ class AppController {
         if (box.status === 'unselected' || box.status === 'suggested') {
             box.status = 'selected';
             this.state.soundManager.playBeep();
-            this.logConsole(`[INSPECTOR] Caja ${boxId} seleccionada táctil para muestra.`);
+            this.logConsole(`[INSPECTOR] Pallet ${activeFolio} - Caja ${boxId} seleccionada para muestra.`);
         } else if (box.status === 'selected') {
-            // Revert back
-            // Check if it was originally suggested
             const origSuggested = boxId.includes('N04-A-C1') || boxId.includes('N07-B-C2') || boxId.includes('N11-C-C1') || boxId.includes('N02-D-C2');
             box.status = origSuggested ? 'suggested' : 'unselected';
             this.state.soundManager.playBeep();
-            this.logConsole(`[INSPECTOR] Caja ${boxId} deseleccionada.`);
+            this.logConsole(`[INSPECTOR] Pallet ${activeFolio} - Caja ${boxId} deseleccionada.`);
         }
 
         this.state.selectedBoxId = box.status === 'selected' ? boxId : null;
@@ -1394,6 +1214,8 @@ class AppController {
 
     updateSelectionDetails(boxId) {
         const container = document.getElementById('selection-details-data');
+        if (!container) return;
+
         if (!boxId) {
             container.innerHTML = `
                 <div class="empty-selection-msg">
@@ -1403,13 +1225,16 @@ class AppController {
             return;
         }
 
-        const box = this.state.boxes.find(b => b.id === boxId);
+        const activeFolio = this.state.activeFolio;
+        const boxes = this.state.palletBoxesDatabase[activeFolio] || [];
+        const box = boxes.find(b => b.id === boxId);
         if (!box) return;
 
         let statusText = "No Seleccionada";
         let statusClass = "text-muted";
         if (box.status === 'suggested') { statusText = "Sugerida Algoritmo (Aleatoria)"; statusClass = "text-green"; }
         if (box.status === 'selected') { statusText = "Seleccionada Inspector"; statusClass = "text-accent"; }
+        if (box.status === 'approved') { statusText = "Aprobada Físico"; statusClass = "text-green"; }
         if (box.status === 'rejected') { statusText = "Rechazada (Hallazgo)"; statusClass = "text-red"; }
 
         container.innerHTML = `
@@ -1447,11 +1272,14 @@ class AppController {
         `;
     }
 
-    // Modal Manual Reading Assist
     openManualScanModal(boxId) {
-        this.state.soundManager.playBuzzer(); // Sound warning
+        this.state.soundManager.playBuzzer();
         
-        const box = this.state.boxes.find(b => b.id === boxId);
+        const activeFolio = this.state.activeFolio;
+        const boxes = this.state.palletBoxesDatabase[activeFolio] || [];
+        const box = boxes.find(b => b.id === boxId);
+        if (!box) return;
+
         document.getElementById('modal-box-coord').value = boxId;
         document.getElementById('modal-box-dm-expected').value = box.dataMatrix;
         document.getElementById('modal-input-dm-read').value = '';
@@ -1470,16 +1298,17 @@ class AppController {
             return;
         }
 
-        const box = this.state.boxes.find(b => b.id === coord);
+        const activeFolio = this.state.activeFolio;
+        const boxes = this.state.palletBoxesDatabase[activeFolio] || [];
+        const box = boxes.find(b => b.id === coord);
+        if (!box) return;
         
-        // Manual validation assist
         if (inputVal.toUpperCase() !== expected.toUpperCase()) {
             this.state.soundManager.playBuzzer();
             alert("Error: El código Data Matrix ingresado no concuerda con la base de datos de trazabilidad del lote.");
             return;
         }
 
-        // Correct code manual confirmation!
         box.manualReadConfirmed = true;
         box.status = 'selected';
         
@@ -1495,15 +1324,16 @@ class AppController {
         document.getElementById(modalId).style.display = 'none';
     }
 
-    // Blind Boxes Logic
     loadBlindBoxesForLevel(lvlVal) {
         const buttonsContainer = document.getElementById('blind-boxes-buttons-container');
         const grid = document.getElementById('blind-buttons-grid');
         const helper = document.getElementById('blind-helper-directions');
 
+        if (!buttonsContainer || !grid) return;
+
         if (!lvlVal) {
             buttonsContainer.style.display = 'none';
-            helper.style.display = 'none';
+            if (helper) helper.style.display = 'none';
             return;
         }
 
@@ -1512,10 +1342,12 @@ class AppController {
 
         grid.innerHTML = '';
         
-        // We have 8 blind core boxes per level
+        const activeFolio = this.state.activeFolio;
+        const boxes = this.state.palletBoxesDatabase[activeFolio] || [];
+        
         for (let i = 1; i <= 8; i++) {
             const blindId = `N${levelStr}-INT${i}`;
-            const box = this.state.boxes.find(b => b.id === blindId);
+            const box = boxes.find(b => b.id === blindId);
             
             const btn = document.createElement('button');
             btn.className = 'btn-blind-box';
@@ -1528,14 +1360,13 @@ class AppController {
         }
 
         buttonsContainer.style.display = 'block';
-        helper.style.display = 'none';
+        if (helper) helper.style.display = 'none';
         this.state.soundManager.playBeep();
     }
 
     selectBlindBox(blindId) {
         this.state.blindBoxSelectedId = blindId;
         
-        // Highlight active button
         document.querySelectorAll('.btn-blind-box').forEach(btn => {
             if (btn.innerText === `INT ${blindId.split('INT')[1]}`) {
                 btn.classList.add('selected');
@@ -1544,55 +1375,62 @@ class AppController {
             }
         });
 
-        // Compute blocked boxes
+        const activeFolio = this.state.activeFolio;
+        const boxes = this.state.palletBoxesDatabase[activeFolio] || [];
+        const box = boxes.find(b => b.id === blindId);
+
         const level = this.state.blindLevelSelected;
         const levelStr = String(level).padStart(2, '0');
         const coreIdx = parseInt(blindId.split('INT')[1]);
         const blockingConfig = InteriorBlockingMatrix[coreIdx];
         
         const blockA = `N${levelStr}-${blockingConfig.face}-C${blockingConfig.cols[0]}`;
-        // Calculate a side-room box: next column or adjacent face
         const nextCol = blockingConfig.cols[0] === 1 ? 2 : 1;
         const blockB = `N${levelStr}-${blockingConfig.face}-C${nextCol}`;
 
-        const box = this.state.boxes.find(b => b.id === blindId);
-        document.getElementById('blind-box-id-lbl').innerText = `${blindId} (Cod: ${box ? box.boxCode : ''})`;
+        const lbl = document.getElementById('blind-box-id-lbl');
+        if (lbl) {
+            lbl.innerText = `${blindId} (Cod: ${box ? box.boxCode : ''})`;
+        }
+        
         const blockingList = document.getElementById('blocking-cajas-list');
-        blockingList.innerHTML = `
-            <li>Caja Directa Bloqueante: <span class="text-accent">${blockA}</span> (${blockingConfig.description})</li>
-            <li>Caja Auxiliar Holgura: <span class="text-warning">${blockB}</span></li>
-        `;
+        if (blockingList) {
+            blockingList.innerHTML = `
+                <li>Caja Directa Bloqueante: <span class="text-accent">${blockA}</span> (${blockingConfig.description})</li>
+                <li>Caja Auxiliar Holgura: <span class="text-warning">${blockB}</span></li>
+            `;
+        }
 
-        document.getElementById('blind-helper-directions').style.display = 'block';
+        const helper = document.getElementById('blind-helper-directions');
+        if (helper) helper.style.display = 'block';
         this.state.soundManager.playBeep();
-        this.logConsole(`[CIEGA HELPER] Plan de desmontaje generado para ${blindId}. Bloqueantes: ${blockA}, ${blockB}.`);
+        this.logConsole(`[CIEGA HELPER] Plan desmontaje generado para ${blindId}. Bloqueantes: ${blockA}, ${blockB}.`);
     }
 
     addBlindBoxToMuestra() {
         const blindId = this.state.blindBoxSelectedId;
         if (!blindId) return;
 
-        const box = this.state.boxes.find(b => b.id === blindId);
+        const activeFolio = this.state.activeFolio;
+        const boxes = this.state.palletBoxesDatabase[activeFolio] || [];
+        const box = boxes.find(b => b.id === blindId);
         if (box) {
             box.status = 'selected';
             this.state.soundManager.playBeep();
-            this.logConsole(`[INSPECTOR] Caja Ciega ${blindId} agregada a la muestra fitosanitaria.`);
+            this.logConsole(`[INSPECTOR] Caja Ciega ${blindId} agregada a muestra.`);
             
-            // Highlight exterior blocking boxes in the visual overlay to guide the operator!
             const level = box.level;
             const levelStr = String(level).padStart(2, '0');
             const coreIdx = parseInt(blindId.split('INT')[1]);
             const blockingConfig = InteriorBlockingMatrix[coreIdx];
             
             const outerBlockingId = `N${levelStr}-${blockingConfig.face}-C${blockingConfig.cols[0]}`;
-            const outerBox = this.state.boxes.find(b => b.id === outerBlockingId);
+            const outerBox = boxes.find(b => b.id === outerBlockingId);
             
-            // Visual alert warning on tablet face
             if (outerBox && outerBox.status === 'unselected') {
-                outerBox.status = 'suggested'; // Turn green to suggest removal
+                outerBox.status = 'suggested';
             }
 
-            // Reload UI
             this.loadInspectorPalletView();
             this.loadBlindBoxesForLevel(box.level);
         }
@@ -1600,16 +1438,20 @@ class AppController {
 
     updateMuestraOverviewPanel() {
         const list = document.getElementById('muestra-items-list');
+        if (!list) return;
         list.innerHTML = '';
 
-        const selectedBoxes = this.state.boxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected');
+        const activeFolio = this.state.activeFolio;
+        if (!activeFolio) return;
+
+        const boxes = this.state.palletBoxesDatabase[activeFolio] || [];
+        const selectedBoxes = boxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected');
         
         document.getElementById('muestra-cnt-selected').innerText = selectedBoxes.length;
         
         const rejected = selectedBoxes.filter(b => b.status === 'rejected').length;
         document.getElementById('muestra-cnt-rejected').innerText = rejected;
 
-        // Check algorithmic suggestions covered
         const suggestedIDs = ['N04-A-C1', 'N07-B-C2', 'N11-C-C1', 'N02-D-C2'];
         const coveredSuggested = selectedBoxes.filter(b => suggestedIDs.includes(b.id)).length;
         document.getElementById('muestra-cnt-sug').innerText = `${coveredSuggested}/4`;
@@ -1630,62 +1472,56 @@ class AppController {
             list.appendChild(li);
         });
 
-        // Enable validation button only if sample size is >= 4 (SAG minimum)
+        // Check if all selected pallets have at least 4 boxes selected
+        const inspectedFolios = this.state.sapPalletSample;
+        let canValidate = inspectedFolios.length > 0;
+        
+        for (const f of inspectedFolios) {
+            const pBoxes = this.state.palletBoxesDatabase[f] || [];
+            const selCount = pBoxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected').length;
+            if (selCount < 4) {
+                canValidate = false;
+                break;
+            }
+        }
+
         const btnNext = document.getElementById('btn-goto-step6');
-        btnNext.disabled = selectedBoxes.length < 4;
+        if (btnNext) {
+            btnNext.disabled = !canValidate;
+        }
     }
 
-    goToStep6() {
-        this.setStep(6);
+    goToStep4() {
+        this.setStep(4);
     }
 
-    // STEP 6 LOGIC: PHYSICAL VERIFICATION SCANNING & REPORT Dictamen
+    // --- STEP 4 LOGIC: PHYSICAL VERIFICATION SCANNING & REPORT Dictamen ---
+    getConsolidatedSelectedBoxes() {
+        const list = [];
+        const inspectedFolios = this.state.sapPalletSample;
+        inspectedFolios.forEach(f => {
+            const boxes = this.state.palletBoxesDatabase[f] || [];
+            boxes.forEach(b => {
+                if (b.status === 'selected' || b.status === 'approved' || b.status === 'rejected') {
+                    list.push({
+                        ...b,
+                        palletFolio: f
+                    });
+                }
+            });
+        });
+        return list;
+    }
+
     loadPhysicalVerificationView() {
         const instPane = document.getElementById('extraction-instructions-pane');
         const suggestPane = document.getElementById('scan-suggested-hints');
-        
-        // Find selected boxes
-        const selected = this.state.boxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected');
+        if (!instPane || !suggestPane) return;
+
+        const selected = this.getConsolidatedSelectedBoxes();
         const pending = selected.filter(b => b.status === 'selected');
 
         if (pending.length === 0) {
-            // Save current pallet to completed inspections
-            this.state.completedPalletInspections[this.state.activeFolio] = {
-                boxes: [...this.state.boxes],
-                dictamen: selected.filter(b => b.status === 'rejected').length > 0 ? 'RECHAZADO' : 'APROBADO'
-            };
-            this.state.palletStates[this.state.activeFolio] = 'completed';
-            this.renderSapRequestedPalletsList();
-
-            // Check if there are other pending pallets in SAP sample
-            const pendingPallets = this.state.sapPalletSample.filter(f => this.state.palletStates[f] === 'pending');
-
-            if (pendingPallets.length > 0) {
-                const nextF = pendingPallets[0];
-                instPane.innerHTML = `
-                    <div class="alert-box-success text-center">
-                        <h4>✔ Muestreo de Pallet ${this.state.activeFolio} Completado</h4>
-                        <p class="mt-xs">Falta inspeccionar el siguiente pallet de la muestra SAP: <strong class="text-accent font-mono" style="font-size:1.1rem;">${nextF}</strong></p>
-                        <p class="small text-muted mt-xs">Haga clic abajo para iniciar la verificación del siguiente pallet físico en el andén.</p>
-                    </div>
-                    <button class="btn btn-accent btn-full mt-lg" onclick="app.prepareNextPallet('${nextF}')">
-                        Iniciar Inspección Siguiente Pallet (Folio: ${nextF})
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="ml-sm">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                    </button>
-                `;
-                document.getElementById('box-evaluation-pane').style.display = 'none';
-                suggestPane.innerHTML = '';
-                document.getElementById('input-dm-verify').disabled = true;
-                
-                document.getElementById('signature-area').style.display = 'none';
-                document.getElementById('btn-finalize-inspection').disabled = true;
-                this.updateActaForm();
-                return;
-            }
-
-            // All pallets in SAP sample are completed!
             instPane.innerHTML = `
                 <div class="alert-box-success text-center">
                     <h4>✔ Todos los Pallets de la Muestra SAP Completados</h4>
@@ -1713,7 +1549,7 @@ class AppController {
         let pendingListHtml = pending.map(box => `
             <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
                 <div>
-                    <span class="text-accent font-mono text-bold">${box.id}</span>
+                    <span class="text-accent font-mono text-bold">${box.palletFolio} - ${box.id}</span>
                     <span style="font-size:0.75rem; color:var(--color-text-muted); margin-left: 10px;">Nivel ${box.level} - Cara ${box.face}</span>
                 </div>
                 <span class="font-mono text-bold" style="color:var(--color-primary);">${box.boxCode}</span>
@@ -1732,7 +1568,7 @@ class AppController {
 
         // Render fast simulation scan buttons for all pending boxes
         let suggestScanButtons = pending.map(box => `
-            <button class="btn-suggested-scan" onclick="app.simulateVerificationScan('${box.boxCode}')" style="margin-right: 6px; margin-top: 6px;">Escuchar/Simular ${box.id}</button>
+            <button class="btn-suggested-scan" onclick="app.simulateVerificationScan('${box.boxCode}')" style="margin-right: 6px; margin-top: 6px;">Simular ${box.palletFolio} - ${box.id}</button>
         `).join('');
 
         suggestPane.innerHTML = `
@@ -1749,62 +1585,7 @@ class AppController {
         this.updateActaForm();
     }
 
-    prepareNextPallet(nextFolio) {
-        // Reset states for the new pallet
-        this.state.activeFolio = null;
-        this.state.capturedFaces = { A: false, B: false, C: false, D: false };
-        this.state.physicalBoxCount = 0;
-        this.state.cuadraturaCompleted = false;
-        this.state.cuadraturaAdjusted = false;
-        this.state.overlayDetectionsGenerated = false;
-        this.state.boxes = [];
-        this.state.selectedBoxId = null;
-        this.state.blindLevelSelected = null;
-        this.state.blindBoxSelectedId = null;
-        this.state.currentExtractionIndex = 0;
-        this.state.scannedVerificationError = false;
-
-        // Reset step lock representations
-        document.getElementById('lock-step-3').innerText = '🔒';
-        document.getElementById('lock-step-4').innerText = '🔒';
-        document.getElementById('lock-step-5').innerText = '🔒';
-        document.getElementById('lock-step-6').innerText = '🔒';
-
-        // Load next Folio into input field
-        document.getElementById('input-barcode').value = nextFolio;
-        document.getElementById('header-folio').innerText = "NO ASIGNADO";
-        
-        // Reset coupling cards
-        const couplingCard = document.getElementById('coupling-card');
-        const couplingPulse = document.getElementById('coupling-pulse');
-        const couplingText = document.getElementById('coupling-text');
-        couplingCard.style.borderColor = 'var(--color-border)';
-        couplingPulse.className = 'circle-pulse orange';
-        couplingText.innerText = "Esperando Lectura de Folio Físico";
-
-        // Reset blind levels select
-        document.getElementById('select-blind-level').value = '';
-
-        // Reset Step 3 UI captures
-        const faces = ['A', 'B', 'C', 'D'];
-        const faceNames = { A: 'Frontal', B: 'Lateral', C: 'Posterior', D: 'Lateral Opuesta' };
-        faces.forEach(face => {
-            const label = document.getElementById(`cap-label-${face}`);
-            if (label) label.innerText = `CARA ${face} (${faceNames[face]})`;
-            
-            const item = document.getElementById(`cap-face-${face}`);
-            if (item) item.classList.remove('done');
-            
-            const status = document.getElementById(`cap-status-${face}`);
-            if (status) status.innerText = "Pendiente";
-            
-            const thumb = document.getElementById(`thumb-${face}`);
-            if (thumb) thumb.innerHTML = '';
-        });
-
-        this.setStep(2);
-        this.logConsole(`[SISTEMA] Preparando transición para el siguiente pallet SAP: ${nextFolio}.`);
-    }
+    prepareNextPallet(nextFolio) {}
 
     simulateVerificationScan(code) {
         document.getElementById('input-dm-verify').value = code;
@@ -1813,75 +1594,62 @@ class AppController {
 
     verifyBoxScan() {
         const inputVal = document.getElementById('input-dm-verify').value.trim();
-        
-        // Get all currently pending selected boxes
-        const pending = this.state.boxes.filter(b => b.status === 'selected');
-        if (pending.length === 0) return;
-
         if (inputVal === '') {
             alert("Ingrese o pistolee el código Data Matrix de la caja extraída.");
             return;
         }
 
+        const pending = this.getConsolidatedSelectedBoxes().filter(b => b.status === 'selected');
+        if (pending.length === 0) return;
+
         // Search for a box in the pending sample that matches the scanned code
         const matchedBox = pending.find(b => b.boxCode.toUpperCase() === inputVal.toUpperCase());
 
         if (!matchedBox) {
-            // Scanner Warning Buzzer Sound (Chicharra)
             this.state.soundManager.playBuzzer();
             this.state.scannedVerificationError = true;
-
             this.logConsole(`[SCAN ERROR] Movilizador pistoleó un código incorrecto o fuera de muestra: ${inputVal}.`, 'error');
-
-            alert(`🚨 ERROR DE EXTRACCIÓN (CHICHARRA)\n\nEl operador extrajo una caja que no coincide con ninguna coordenada pinchada de la muestra.\n\nCódigo Leído: ${inputVal}\n\nPor favor devuelva la caja errónea y extraiga la correcta.`);
+            alert(`🚨 ERROR DE EXTRACCIÓN (CHICHARRA)\n\nEl operador extrajo una caja que no coincide con ninguna coordenada de la muestra del lote.\n\nCódigo Leído: ${inputVal}\n\nPor favor devuelva la caja errónea y extraiga la correcta.`);
             return;
         }
 
         // Correct box scan!
         this.state.soundManager.playBeep();
         this.state.scannedVerificationError = false;
-        this.logConsole(`[SCAN OK] Pistoleo correcto de caja coordenada ${matchedBox.id}. Código 10D: ${matchedBox.boxCode} verificado.`);
+        this.logConsole(`[SCAN OK] Pistoleo correcto. Pallet: ${matchedBox.palletFolio}, Caja: ${matchedBox.id}. Código: ${matchedBox.boxCode} verificado.`);
 
         // Store the ID of the box currently being evaluated
-        this.state.currentlyEvaluatingBoxId = matchedBox.id;
+        this.state.currentlyEvaluatingBox = {
+            palletFolio: matchedBox.palletFolio,
+            id: matchedBox.id
+        };
 
         // Open evaluation window
-        document.getElementById('eval-box-id-lbl').innerText = matchedBox.id;
+        document.getElementById('eval-box-id-lbl').innerText = `${matchedBox.palletFolio} - ${matchedBox.id}`;
         document.getElementById('box-evaluation-pane').style.display = 'block';
     }
 
     evaluateBox(result) {
-        const boxId = this.state.currentlyEvaluatingBoxId;
-        const currentBox = this.state.boxes.find(b => b.id === boxId);
+        const evalBox = this.state.currentlyEvaluatingBox;
+        if (!evalBox) return;
+
+        const boxes = this.state.palletBoxesDatabase[evalBox.palletFolio] || [];
+        const currentBox = boxes.find(b => b.id === evalBox.id);
         if (!currentBox) return;
         
-        // Set evaluation state
         currentBox.status = result === 'APPROVED' ? 'approved' : 'rejected';
         currentBox.evalState = result;
         
-        this.state.currentlyEvaluatingBoxId = null;
+        this.state.currentlyEvaluatingBox = null;
         
         this.state.soundManager.playBeep();
-        this.logConsole(`[SAG INSPECTOR] Caja ${currentBox.id} evaluada. Dictamen: ${result}.`);
+        this.logConsole(`[SAG INSPECTOR] Pallet ${evalBox.palletFolio} - Caja ${currentBox.id} evaluada. Dictamen: ${result}.`);
 
-        // Reload verification step layout
         this.loadPhysicalVerificationView();
     }
 
     updateActaForm() {
-        let allSelected = [];
-        // Gather from completed pallet inspections
-        for (const f in this.state.completedPalletInspections) {
-            allSelected.push(...this.state.completedPalletInspections[f].boxes.filter(b => b.status === 'approved' || b.status === 'rejected'));
-        }
-        // Also add current pallet
-        const currentSelected = this.state.boxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected');
-        currentSelected.forEach(box => {
-            if (!allSelected.find(b => b.boxCode === box.boxCode)) {
-                allSelected.push(box);
-            }
-        });
-
+        const allSelected = this.getConsolidatedSelectedBoxes().filter(b => b.status === 'approved' || b.status === 'rejected');
         const approved = allSelected.filter(b => b.status === 'approved');
         const rejected = allSelected.filter(b => b.status === 'rejected');
 
@@ -1894,20 +1662,18 @@ class AppController {
         document.getElementById('acta-rejected-cnt').innerText = rejected.length;
 
         const dictamenTag = document.getElementById('acta-dictamen');
-        
-        // Check if there are still pending pallets or pending boxes on the active pallet
-        const pendingPallets = this.state.sapPalletSample.filter(f => this.state.palletStates[f] === 'pending');
-        const pendingActiveBoxes = this.state.boxes.filter(b => b.status === 'selected');
-
-        if (pendingPallets.length > 0 || pendingActiveBoxes.length > 0) {
-            dictamenTag.className = "status-tag locked";
-            dictamenTag.innerText = "PENDIENTE MUESTRA";
-        } else if (rejected.length > 0) {
-            dictamenTag.className = "status-tag locked";
-            dictamenTag.innerText = "LOTE RECHAZADO";
-        } else {
-            dictamenTag.className = "status-tag active-run";
-            dictamenTag.innerText = "LOTE APROBADO";
+        if (dictamenTag) {
+            const pendingCount = this.getConsolidatedSelectedBoxes().filter(b => b.status === 'selected').length;
+            if (pendingCount > 0) {
+                dictamenTag.className = "status-tag locked";
+                dictamenTag.innerText = "PENDIENTE MUESTRA";
+            } else if (rejected.length > 0) {
+                dictamenTag.className = "status-tag locked";
+                dictamenTag.innerText = "LOTE RECHAZADO";
+            } else {
+                dictamenTag.className = "status-tag active-run";
+                dictamenTag.innerText = "LOTE APROBADO";
+            }
         }
     }
 
@@ -1920,18 +1686,7 @@ class AppController {
             return;
         }
 
-        // Build list of all samples evaluated across all pallets
-        let allSelected = [];
-        for (const f in this.state.completedPalletInspections) {
-            allSelected.push(...this.state.completedPalletInspections[f].boxes.filter(b => b.status === 'approved' || b.status === 'rejected'));
-        }
-        const currentSelected = this.state.boxes.filter(b => b.status === 'approved' || b.status === 'rejected');
-        currentSelected.forEach(box => {
-            if (!allSelected.find(b => b.boxCode === box.boxCode)) {
-                allSelected.push(box);
-            }
-        });
-
+        const allSelected = this.getConsolidatedSelectedBoxes().filter(b => b.status === 'approved' || b.status === 'rejected');
         const rejected = allSelected.filter(b => b.status === 'rejected').length;
 
         document.getElementById('cert-no').innerText = Math.floor(1000 + Math.random() * 9000);
@@ -1945,18 +1700,20 @@ class AppController {
 
         // Build sample table
         const tbody = document.getElementById('cert-muestra-tbody');
-        tbody.innerHTML = '';
-        allSelected.forEach(box => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="font-mono text-bold">${box.id}</td>
-                <td>Nivel ${box.level} - Col ${box.column}</td>
-                <td>${box.type === 'interior' ? 'Interior (Ciega)' : 'Exterior'}</td>
-                <td class="font-mono">${box.obstructedByZuncho && !box.manualReadConfirmed ? 'Lectura manual (' + box.boxCode + ')' : box.boxCode}</td>
-                <td class="text-bold ${box.evalState === 'APPROVED' ? 'text-green' : 'text-red'}">${box.evalState === 'APPROVED' ? 'APROBADO' : 'RECHAZADO FITOSANITARIO'}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+        if (tbody) {
+            tbody.innerHTML = '';
+            allSelected.forEach(box => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="font-mono text-bold">${box.palletFolio} - ${box.id}</td>
+                    <td>Nivel ${box.level} - Col ${box.column}</td>
+                    <td>${box.type === 'interior' ? 'Interior (Ciega)' : 'Exterior'}</td>
+                    <td class="font-mono">${box.obstructedByZuncho && !box.manualReadConfirmed ? 'Lectura manual (' + box.boxCode + ')' : box.boxCode}</td>
+                    <td class="text-bold ${box.evalState === 'APPROVED' ? 'text-green' : 'text-red'}">${box.evalState === 'APPROVED' ? 'APROBADO' : 'RECHAZADO FITOSANITARIO'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
         // Dictamen Final Box styling
         const dictBox = document.getElementById('cert-dictamen-pane');
@@ -1989,6 +1746,7 @@ class AppController {
             inspector: sigInput,
             dictamen: dictamenText,
             samples: allSelected.map(box => ({
+                palletFolio: box.palletFolio,
                 id: box.id,
                 type: box.type,
                 boxCode: box.boxCode,
@@ -1998,7 +1756,7 @@ class AppController {
 
         try {
             let history = JSON.parse(localStorage.getItem('prize_sag_inspections')) || [];
-            history.unshift(inspectionRecord); // Newest first
+            history.unshift(inspectionRecord);
             localStorage.setItem('prize_sag_inspections', JSON.stringify(history));
             this.logConsole(`[HISTORIAL] Inspección de lote ${this.state.activePackingList.lote} guardada localmente.`);
         } catch (e) {
@@ -2033,20 +1791,29 @@ class AppController {
     }
 
     updateLockStatus() {
-        // Enforce lock indicators inside sidebar
         const lock2 = document.getElementById('lock-step-2');
         const lock3 = document.getElementById('lock-step-3');
         const lock4 = document.getElementById('lock-step-4');
         const lock5 = document.getElementById('lock-step-5');
-        const lock6 = document.getElementById('lock-step-6');
 
         if (lock2) lock2.innerText = this.state.packingListApproved ? '🔓' : '🔒';
-        if (lock3) lock3.innerText = this.state.activeFolio ? '🔓' : '🔒';
-        if (lock4) lock4.innerText = this.state.cuadraturaCompleted ? '🔓' : '🔒';
-        if (lock5) lock5.innerText = this.state.overlayDetectionsGenerated ? '🔓' : '🔒';
+        if (lock3) lock3.innerText = this.isVisionDbCuadraturaCompleted() ? '🔓' : '🔒';
         
-        const selected = this.state.boxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected');
-        if (lock6) lock6.innerText = selected.length >= 4 ? '🔓' : '🔒';
+        const inspectedFolios = this.state.sapPalletSample;
+        let canProceedTo4 = inspectedFolios.length > 0;
+        for (const f of inspectedFolios) {
+            const pBoxes = this.state.palletBoxesDatabase[f] || [];
+            const selCount = pBoxes.filter(b => b.status === 'selected' || b.status === 'approved' || b.status === 'rejected').length;
+            if (selCount < 4) {
+                canProceedTo4 = false;
+                break;
+            }
+        }
+        if (lock4) lock4.innerText = canProceedTo4 ? '🔓' : '🔒';
+
+        const selected = this.getConsolidatedSelectedBoxes();
+        const pendingCount = selected.filter(b => b.status === 'selected').length;
+        if (lock5) lock5.innerText = (selected.length >= 4 && pendingCount === 0) ? '🔓' : '🔒';
     }
 
     setTestMode(mode) {
@@ -2287,6 +2054,10 @@ class AppController {
         this.state.physicalBoxCount = 0;
         this.state.cuadraturaCompleted = false;
         this.state.cuadraturaAdjusted = false;
+        this.state.palletBoxesDatabase = {};
+        this.state.palletPhotosDatabase = {};
+        this.state.palletCuadraturaDatabase = {};
+        this.state.sapPalletSample = [];
 
         const codesListContainer = document.getElementById('decoded-codes-list-container');
         const codesList = document.getElementById('decoded-codes-list');

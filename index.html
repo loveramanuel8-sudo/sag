@@ -51,8 +51,8 @@
                 <div class="nav-step" id="btn-step-2" onclick="app.setStep(2)">
                     <div class="step-num">02</div>
                     <div class="step-details">
-                        <span class="step-title">Tarjador</span>
-                        <span class="step-desc">Pistoleo Folio (10D)</span>
+                        <span class="step-title">Base de Fotos e IA</span>
+                        <span class="step-desc">Cuadratura de Lote</span>
                     </div>
                     <div class="step-status-icon locked" id="lock-step-2">🔒</div>
                 </div>
@@ -60,8 +60,8 @@
                 <div class="nav-step" id="btn-step-3" onclick="app.setStep(3)">
                     <div class="step-num">03</div>
                     <div class="step-details">
-                        <span class="step-title">Módulo de Visión</span>
-                        <span class="step-desc">Captura Fotos HD</span>
+                        <span class="step-title">Tablet Inspector</span>
+                        <span class="step-desc">Selección Táctil</span>
                     </div>
                     <div class="step-status-icon locked" id="lock-step-3">🔒</div>
                 </div>
@@ -69,37 +69,19 @@
                 <div class="nav-step" id="btn-step-4" onclick="app.setStep(4)">
                     <div class="step-num">04</div>
                     <div class="step-details">
-                        <span class="step-title">Motor IA Overlay</span>
-                        <span class="step-desc">Decodificación DM</span>
+                        <span class="step-title">Inspección Física</span>
+                        <span class="step-desc">Validación y Acta</span>
                     </div>
                     <div class="step-status-icon locked" id="lock-step-4">🔒</div>
                 </div>
 
                 <div class="nav-step" id="btn-step-5" onclick="app.setStep(5)">
-                    <div class="step-num">05</div>
-                    <div class="step-details">
-                        <span class="step-title">Tablet Inspector</span>
-                        <span class="step-desc">Selección Táctil</span>
-                    </div>
-                    <div class="step-status-icon locked" id="lock-step-5">🔒</div>
-                </div>
-
-                <div class="nav-step" id="btn-step-6" onclick="app.setStep(6)">
-                    <div class="step-num">06</div>
-                    <div class="step-details">
-                        <span class="step-title">Inspección Física</span>
-                        <span class="step-desc">Validación y Acta</span>
-                    </div>
-                    <div class="step-status-icon locked" id="lock-step-6">🔒</div>
-                </div>
-
-                <div class="nav-step" id="btn-step-7" onclick="app.setStep(7)">
                     <div class="step-num">📜</div>
                     <div class="step-details">
                         <span class="step-title">Historial</span>
                         <span class="step-desc">Lotes Guardados</span>
                     </div>
-                    <div class="step-status-icon" id="lock-step-7"></div>
+                    <div class="step-status-icon" id="lock-step-5"></div>
                 </div>
             </nav>
 
@@ -340,296 +322,49 @@
                     </div>
                 </section>
 
-                <!-- VIEW 2: TARJADOR (PISTOLEO FOLIO) -->
+                <!-- VIEW 2: BASE DE DATOS DE VISIÓN E IA (CUADRATURA AUTOMÁTICA DE LOTE) -->
                 <section class="step-view" id="view-step-2">
-                    <div class="grid-2col">
+                    <div style="max-width: 1200px; margin: 0 auto;">
                         <div class="card p-lg">
                             <div class="card-header">
                                 <span class="badge badge-primary">PASO 2</span>
-                                <h2>Pistoleo y Asociación del Folio del Pallet</h2>
+                                <h2>Base de Datos de Visión Artificial e IA</h2>
                             </div>
-                            <p class="description-text">
-                                El tarjador o movilizador debe escanear el código de barras de la tarjeta de pallet ubicada en la parte superior del esquinero para verificar su correspondencia con el Packing List autorizado.
+                            <p class="description-text mb-lg">
+                                La base de datos contiene los registros fotográficos de las 4 caras de todos los pallets de la Solicitud, capturados automáticamente por el pórtico de visión en la línea. El motor de IA ha validado la cuadratura física contra el Packing List.
                             </p>
 
-                            <div class="scanner-simulation mt-xl">
-                                <div class="scanner-target">
-                                    <div class="laser-line"></div>
-                                    <div class="barcode-graphic">
-                                        <div class="bar bar-1"></div>
-                                        <div class="bar bar-2"></div>
-                                        <div class="bar bar-3"></div>
-                                        <div class="bar bar-4"></div>
-                                        <div class="bar bar-1"></div>
-                                        <div class="bar bar-3"></div>
-                                        <div class="bar bar-2"></div>
-                                        <div class="bar bar-4"></div>
-                                    </div>
-                                    <span class="scanner-tag">ESCANEAR TARJETA PALLET</span>
-                                </div>
-
-                                <div class="form-group mt-lg">
-                                    <label for="input-barcode">Folio Escaneado (10 Dígitos Números)</label>
-                                    <div class="input-with-action">
-                                        <input type="text" id="input-barcode" class="input-big font-mono" maxlength="10" placeholder="Ej: 1020013265" onkeypress="if(event.key === 'Enter') app.scanFolio()">
-                                        <button class="btn btn-primary" id="btn-scan-folio" onclick="app.scanFolio()">Pistolear</button>
-                                    </div>
-                                    <span class="input-hint">Simule la pistola digitando el número y haciendo clic en Pistolear o presionando Enter.</span>
-                                </div>
+                            <!-- Pallets Database Grid -->
+                            <div id="db-pallets-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                                <!-- Injected dynamically by JS -->
                             </div>
 
-                            <div class="demo-hints mt-lg">
-                                <strong>Folios seleccionados para muestra (Pistoleo Rápido):</strong>
-                                <ul class="hint-list mt-sm" id="step2-dynamic-hints">
-                                    <!-- Injected dynamically by JS -->
-                                </ul>
-                            </div>
-                        </div>
-
-                        <div class="card p-lg">
-                            <div class="sap-requests-card p-md mb-md" style="background: rgba(241, 196, 15, 0.05); border: 1px dashed rgba(241, 196, 15, 0.3); border-radius: var(--radius-md);">
-                                <h4 class="text-warning">📋 Muestra de Pallets Solicitada por SAP</h4>
-                                <p class="small text-muted mt-xs">SAP analizó el lote de producción y solicita inspeccionar los siguientes folios de pallet específicos:</p>
-                                <ul class="mt-sm" id="sap-requested-folios-list" style="list-style:none; padding-left:0; display:flex; flex-direction:column; gap:6px;">
-                                    <!-- Injected dynamically by JS -->
-                                </ul>
-                            </div>
-
-                            <h3>Estado del Acoplamiento</h3>
-                            <div class="connection-status-card mt-md" id="coupling-card">
-                                <div class="coupling-state text-center py-lg">
-                                    <div class="circle-pulse orange" id="coupling-pulse"></div>
-                                    <h4 class="mt-md" id="coupling-text">Esperando Lectura de Folio Físico</h4>
-                                </div>
-                            </div>
-
-                            <div class="logs-console mt-lg">
-                                <div class="console-header">
-                                    <span>Consola de Terminal Lector</span>
-                                    <button class="console-clear" onclick="app.clearConsole()">Limpiar</button>
-                                </div>
-                                <div class="console-body" id="console-logs">
-                                    <div class="log-line system">[SYS] Terminal inicializada. Esperando Folio de 10 dígitos...</div>
-                                </div>
+                            <div class="actions-footer mt-xl">
+                                <button class="btn btn-secondary" onclick="app.resetAll()">Limpiar Datos</button>
+                                <button class="btn btn-primary" id="btn-approve-db" onclick="app.approveVisionDb()">
+                                    Aprobar Base de Fotos e Habilitar Tablet
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="ml-sm">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- VIEW 3: MODULO DE VISION (CAPTURA FOTOGRAFICA HD) -->
+                <!-- VIEW 3: TABLET INSPECTOR (SELECCIÓN DE PALLETS Y CAJAS TÁCTIL) -->
                 <section class="step-view" id="view-step-3">
-                    <div class="card p-lg">
-                        <div class="card-header">
-                            <span class="badge badge-primary">PASO 3</span>
-                            <h2>Captura Fotográfica HD y Cuadratura Automática</h2>
-                        </div>
-                        <p class="description-text">
-                            La cámara de visión artificial captura fotografías en alta resolución de las 4 caras del pallet en el andén de inspección. El motor efectúa el conteo físico de cajas expuestas y lo cruza contra la planilla oficial.
-                        </p>
-
-                        <div class="grid-capture mt-lg">
-                            <!-- Left: Face captures -->
-                            <div class="capture-controls">
-                                <h3>Estación de Cámaras HD</h3>
-                                <div class="face-capture-grid">
-                                    <!-- Cara A -->
-                                    <div class="capture-item" id="cap-face-A">
-                                        <div class="cap-header">
-                                            <span id="cap-label-A">CARA A (Frontal)</span>
-                                            <span class="cap-status" id="cap-status-A">Pendiente</span>
-                                        </div>
-                                        <div class="cap-thumbnail" onclick="app.openCamera('A')">
-                                            <div class="cap-overlay">
-                                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                                                    <circle cx="12" cy="13" r="4"></circle>
-                                                </svg>
-                                                <span>CAPTURAR CARA A</span>
-                                            </div>
-                                            <div class="face-thumbnail-img" id="thumb-A"></div>
-                                        </div>
-                                    </div>
-                                    <!-- Cara B -->
-                                    <div class="capture-item" id="cap-face-B">
-                                        <div class="cap-header">
-                                            <span id="cap-label-B">CARA B (Lateral)</span>
-                                            <span class="cap-status" id="cap-status-B">Pendiente</span>
-                                        </div>
-                                        <div class="cap-thumbnail" onclick="app.openCamera('B')">
-                                            <div class="cap-overlay">
-                                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                                                    <circle cx="12" cy="13" r="4"></circle>
-                                                </svg>
-                                                <span>CAPTURAR CARA B</span>
-                                            </div>
-                                            <div class="face-thumbnail-img" id="thumb-B"></div>
-                                        </div>
-                                    </div>
-                                    <!-- Cara C -->
-                                    <div class="capture-item" id="cap-face-C">
-                                        <div class="cap-header">
-                                            <span id="cap-label-C">CARA C (Posterior)</span>
-                                            <span class="cap-status" id="cap-status-C">Pendiente</span>
-                                        </div>
-                                        <div class="cap-thumbnail" onclick="app.openCamera('C')">
-                                            <div class="cap-overlay">
-                                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                                                    <circle cx="12" cy="13" r="4"></circle>
-                                                </svg>
-                                                <span>CAPTURAR CARA C</span>
-                                            </div>
-                                            <div class="face-thumbnail-img" id="thumb-C"></div>
-                                        </div>
-                                    </div>
-                                    <!-- Cara D -->
-                                    <div class="capture-item" id="cap-face-D">
-                                        <div class="cap-header">
-                                            <span id="cap-label-D">CARA D (Lateral Opuesta)</span>
-                                            <span class="cap-status" id="cap-status-D">Pendiente</span>
-                                        </div>
-                                        <div class="cap-thumbnail" onclick="app.openCamera('D')">
-                                            <div class="cap-overlay">
-                                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                                                    <circle cx="12" cy="13" r="4"></circle>
-                                                </svg>
-                                                <span>CAPTURAR CARA D</span>
-                                            </div>
-                                            <div class="face-thumbnail-img" id="thumb-D"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button class="btn btn-accent btn-full mt-md" onclick="app.simulateAllCaptures()">Auto-Capturar las 4 Caras</button>
-                            </div>
-
-                            <!-- Right: Analysis results and visual representation -->
-                            <div class="capture-analysis card p-md" style="background: var(--color-bg-card);">
-                                <h3>Cuadratura de Visión Artificial</h3>
-                                <div class="vision-results-card mt-md">
-                                    <div class="counter-display">
-                                        <div class="counter-item">
-                                            <span class="cnt-label">TEÓRICO PACKING</span>
-                                            <span class="cnt-number" id="vision-cnt-theoretical">--</span>
-                                        </div>
-                                        <div class="counter-item border-left">
-                                            <span class="cnt-label">CONTEO FÍSICO (IA)</span>
-                                            <span class="cnt-number" id="vision-cnt-physical">--</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="cuadratura-status-message mt-md" id="cuadratura-alert-container">
-                                        <div class="alert-box-neutral" id="cuadratura-alert-box">
-                                            <h4 id="cuadratura-alert-title">Esperando Toma Fotográfica</h4>
-                                            <p id="cuadratura-alert-desc">Inicie la toma de fotos de las 4 caras para efectuar la cuadratura física contra la planilla del ERP.</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="error-action-pane mt-md" id="pane-error-cuadratura" style="display:none;">
-                                        <div class="warning-alert-red">
-                                            <strong>ACCIÓN CORRECTIVA OPERATIVA:</strong>
-                                            <p class="mt-xs">El conteo no cuadra con la declaración fitosanitaria de la Contraparte SAG. Se debe revisar la estiba física del pallet o reemitir la planilla ajustada en el ERP.</p>
-                                            <div class="button-row mt-sm">
-                                                <button class="btn btn-small btn-secondary" onclick="app.reemitirERP()">Reemitir Planilla ERP (Ajustar a Conteo)</button>
-                                                <button class="btn btn-small btn-outline-red" onclick="app.reacomodarFisico()">Reacomodar Estiba Física</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="actions-footer mt-xl">
-                                    <button class="btn btn-secondary" onclick="app.resetAll()">Limpiar Datos</button>
-                                    <button class="btn btn-primary" id="btn-goto-step4" onclick="app.goToStep4()" disabled>Proceder a Decodificación e Overlay</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- VIEW 4: MOTOR IA & OVERLAY (DECODIFICACIÓN DATA MATRIX) -->
-                <section class="step-view" id="view-step-4">
-                    <div class="grid-2col">
-                        <div class="card p-lg">
-                            <div class="card-header">
-                                <span class="badge badge-primary">PASO 4</span>
-                                <h2>Decodificación de Data Matrix y Capa Digital</h2>
-                            </div>
-                            <p class="description-text">
-                                El motor de visión artificial localiza y decodifica las etiquetas Data Matrix pegadas al costado de cada caja. Proyecta un recuadro inteligente encima de cada caja leída sobre la fotografía HD real.
-                            </p>
-
-                            <div class="model-run-container mt-lg">
-                                <div class="decoding-process-status">
-                                    <div class="scanning-loader" id="overlay-loader" style="display: none;">
-                                        <div class="spinner"></div>
-                                        <span>Procesando imagen con Red Neuronal...</span>
-                                    </div>
-                                    <div class="decoding-summary" id="overlay-stats">
-                                        <div class="stat-badge">
-                                            <span class="st-lbl">Cajas Detectadas</span>
-                                            <span class="st-val text-accent" id="stats-detected">--</span>
-                                        </div>
-                                        <div class="stat-badge">
-                                            <span class="st-lbl">Data Matrix Leídos</span>
-                                            <span class="st-val text-green" id="stats-read">--</span>
-                                        </div>
-                                        <div class="stat-badge">
-                                            <span class="st-lbl">Obstruidos (Zuncho)</span>
-                                            <span class="st-val text-red" id="stats-obstructed">--</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="vision-status-indicator mt-md" id="vision-resolution-alert">
-                                    <div class="info-alert">
-                                        <div class="alert-text">
-                                            <strong>Detección Completada:</strong> Se han mapeado geométricamente todas las cajas. El zuncho verde de tracción horizontal cruza sobre la etiqueta de algunas cajas, impidiendo la lectura automática. Proceda a la Tablet del Inspector para resolver las lecturas manuales asistidas.
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Decoded Data Matrix codes list -->
-                                <div id="decoded-codes-list-container" style="display:none; margin-top: 1rem; background: rgba(0,0,0,0.15); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 12px; text-align: left;">
-                                    <h4 style="font-size:0.8rem; border-bottom:1px solid var(--color-border); padding-bottom:5px; margin-bottom: 8px; color: var(--color-accent-sag);">📋 Data Matrix Decodificados (Filtro Cara A)</h4>
-                                    <ul id="decoded-codes-list" style="margin:0; padding-left:15px; font-family:var(--font-mono); font-size:0.75rem; color:var(--color-text); max-height:130px; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:4px 12px;">
-                                        <!-- Injected dynamically by JS -->
-                                    </ul>
-                                </div>
-
-                                <div class="actions-footer mt-xl">
-                                    <button class="btn btn-secondary" onclick="app.resetAll()">Limpiar Datos</button>
-                                    <button class="btn btn-primary" id="btn-goto-tablet" onclick="app.goToTablet()" disabled>
-                                        Habilitar Tablet del Inspector SAG
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="ml-sm">
-                                            <polyline points="9 18 15 12 9 6"></polyline>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card p-lg text-center">
-                            <h3>Visualización Técnica del Mapeo</h3>
-                            <p class="small text-muted mb-md">Capa geométrica de cajas (Nivel x Cara x Columna)</p>
-                            
-                            <div class="overlay-graphic-demo">
-                                <div class="pallet-diagram-wireframe" style="position:relative; width: 100%; max-width: 320px; margin: 0 auto;">
-                                    <!-- Rendered dynamically or standard representation -->
-                                    <div class="wireframe-container" id="wireframe-viz" style="position:relative; width:100%; border: 1.5px solid var(--color-border); border-radius:var(--radius-md); padding:10px; box-sizing:border-box;">
-                                        <!-- Wireframe boxes will be injected here by app.js -->
-                                    </div>
-                                </div>
-                                <p class="small text-muted mt-sm" style="font-size:0.75rem;">💡 Pasa el cursor sobre cualquier caja para ver el código decodificado.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- VIEW 5: TABLET INSPECTOR (SELECCIÓN TÁCTIL) -->
-                <section class="step-view" id="view-step-5">
                     <div class="tablet-interface-layout">
-                        <!-- Pallet Display Frame -->
+                        <!-- Left Panel: Pallets Selector -->
+                        <div class="card p-md" style="display: flex; flex-direction: column; max-height: 720px; overflow-y: auto;">
+                            <h3 class="section-divider-title" style="margin-bottom: 10px;">Pallets del Lote</h3>
+                            <p class="small text-muted mb-sm" style="font-size:0.75rem;">Haga clic en un pallet para inspeccionarlo y marque su casilla para agregarlo a la muestra fitosanitaria.</p>
+                            <div id="tablet-pallets-list" style="display: flex; flex-direction: column; gap: 8px;">
+                                <!-- Injected dynamically by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Center Panel: Pallet Display Frame -->
                         <div class="tablet-pallet-frame card p-md">
                             <div class="pallet-frame-header">
                                 <div class="face-selector-tabs">
@@ -639,14 +374,12 @@
                                     <button class="face-tab" id="tab-face-D" onclick="app.changeInspectorFace('D')">Cara D (Lateral I)</button>
                                 </div>
                                 <div class="face-indicator">
-                                    MOSTRANDO: <strong class="text-accent" id="active-inspector-face-lbl">CARA A</strong>
+                                    PALLET FOLIO: <strong id="active-inspector-pallet-lbl" class="text-accent">--</strong> | CARA: <strong class="text-accent" id="active-inspector-face-lbl">A</strong>
                                 </div>
                             </div>
 
-                            <!-- PALLET SCREEN OVERLAY CANVAS -->
                             <div class="tablet-screen-container">
                                 <div class="pallet-photo-overlay-canvas" id="pallet-overlay-canvas">
-                                    <!-- Dynamic layout. An HD pallet image is simulated background. Bounding boxes are drawn over it. -->
                                     <div class="pallet-image-mockup" id="pallet-image-bg">
                                         <!-- Visual green zunchos simulation -->
                                         <div class="zuncho zuncho-1"></div>
@@ -666,21 +399,20 @@
                                 </div>
                             </div>
 
-                            <!-- Legend -->
                             <div class="color-legend mt-sm">
-                                <div class="legend-item"><span class="legend-box unselected"></span> Sin Marco: Detectado</div>
-                                <div class="legend-item"><span class="legend-box suggested"></span> Verde: Sugerido SAG</div>
-                                <div class="legend-item"><span class="legend-box selected"></span> Azul: Pinchado/Inspector</div>
-                                <div class="legend-item"><span class="legend-box rejected"></span> Rojo: Rechazo Fitosanitario</div>
-                                <div class="legend-item"><span class="legend-box blocked"></span> Zuncho Cruzado (Línea Verde)</div>
+                                <div class="legend-item"><span class="legend-box unselected"></span> Sin Marco: Mapeada</div>
+                                <div class="legend-item"><span class="legend-box suggested"></span> Verde: Sugerida SAG</div>
+                                <div class="legend-item"><span class="legend-box selected"></span> Azul: Pinchada</div>
+                                <div class="legend-item"><span class="legend-box rejected"></span> Rojo: Plaga/Rechazo</div>
+                                <div class="legend-item"><span class="legend-box blocked"></span> Zuncho Cruzado</div>
                             </div>
                         </div>
 
-                        <!-- Sidebar / Inspector Actions Panel -->
+                        <!-- Right Panel: Inspector Actions Sidebar -->
                         <div class="tablet-actions-sidebar card p-md">
                             <div class="inspector-badge-panel">
                                 <span class="inspector-badge">TABLET DE INSPECTOR SAG</span>
-                                <p class="small text-muted mt-xs">Seleccione cajas tocando la pantalla sobre la foto.</p>
+                                <p class="small text-muted mt-xs" style="font-size:0.75rem;">Toque una caja en el visor central para seleccionarla.</p>
                             </div>
 
                             <!-- Info Box details of Selected/Tapped Box -->
@@ -688,16 +420,15 @@
                                 <h3>Caja Seleccionada</h3>
                                 <div class="selection-data-container mt-sm" id="selection-details-data">
                                     <div class="empty-selection-msg">
-                                        <span>Toque una caja en el pallet de la izquierda para ver su trazabilidad o programar muestra.</span>
+                                        <span>Toque una caja en el pallet central para ver su trazabilidad o programar muestra.</span>
                                     </div>
-                                    <!-- Rendered dynamically when box selected -->
                                 </div>
                             </div>
 
                             <!-- Blind Boxes Section -->
                             <div class="blind-box-selection-card mt-md">
                                 <h3>Muestreo de Cajas Interiores / Ciegas</h3>
-                                <p class="small text-muted">Seleccione una caja ubicada en el centro de la estiba. El sistema indicará el plan de desmontaje eficiente.</p>
+                                <p class="small text-muted" style="font-size:0.75rem;">Seleccione un nivel y agregue una caja ciega. El sistema indicará el desmontaje.</p>
                                 
                                 <div class="form-group mt-sm">
                                     <label>Nivel de la Caja Ciega</label>
@@ -714,7 +445,6 @@
                                         <option value="9">Nivel 09</option>
                                         <option value="10">Nivel 10</option>
                                         <option value="11">Nivel 11</option>
-                                        <!-- Level 12 does not have blind boxes in this telescopic stowing model -->
                                     </select>
                                 </div>
 
@@ -728,7 +458,7 @@
                                 <div class="blind-helper-directions mt-md" id="blind-helper-directions" style="display:none;">
                                     <div class="helper-bubble warning">
                                         <strong>Guía de Desmontaje para Caja <span id="blind-box-id-lbl">N05-INT1</span>:</strong>
-                                        <p class="mt-xs">Para extraer esta caja ciega sin desarmar de más la estiba alta, remueva primero las siguientes cajas del exterior en el mismo nivel:</p>
+                                        <p class="mt-xs">Para extraer esta caja ciega sin desarmar de más, remueva primero las siguientes cajas del exterior en el mismo nivel:</p>
                                         <ul class="blocking-cajas-list mt-xs" id="blocking-cajas-list">
                                             <!-- Blocking list -->
                                         </ul>
@@ -761,8 +491,8 @@
                                 </div>
                             </div>
 
-                            <button class="btn btn-accent btn-full mt-lg" id="btn-goto-step6" onclick="app.goToStep6()" disabled>
-                                Validar Extracción en Terreno (Paso 6)
+                            <button class="btn btn-accent btn-full mt-lg" id="btn-goto-step6" onclick="app.goToStep4()" disabled>
+                                Validar Extracción en Terreno (Paso 4)
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="ml-sm">
                                     <path d="M5 12h14M12 5l7 7-7 7"/>
                                 </svg>
@@ -771,16 +501,16 @@
                     </div>
                 </section>
 
-                <!-- VIEW 6: INSPECCIÓN FÍSICA Y ACTA (RESOLUCIÓN) -->
-                <section class="step-view" id="view-step-6">
+                <!-- VIEW 4: INSPECCIÓN FÍSICA Y ACTA (RESOLUCIÓN) -->
+                <section class="step-view" id="view-step-4">
                     <div class="grid-2col">
                         <div class="card p-lg">
                             <div class="card-header">
-                                <span class="badge badge-primary">PASO 6</span>
+                                <span class="badge badge-primary">PASO 4</span>
                                 <h2>Validación de Extracción Físico & Acta SAG</h2>
                             </div>
                             <p class="description-text">
-                                El movilizador extrae físicamente la caja indicada. Con su terminal lectora (pistola Data Matrix), pistolea la etiqueta física. Si el código no coincide con la coordenada solicitada, la app activará una chicharra sonora para obligar a devolver la caja.
+                                El movilizador extrae físicamente la caja indicada. Con su terminal lectora (pistola Data Matrix), pistolee la etiqueta física. Si el código no coincide con la coordenada solicitada, la app activará una chicharra sonora para obligar a devolver la caja.
                             </p>
 
                             <div class="verification-scanning-pane mt-lg">
@@ -838,20 +568,20 @@
                                     <table class="acta-table">
                                         <tbody>
                                             <tr>
-                                                <th>Folio Pallet</th>
-                                                <td id="acta-folio" class="font-mono">--</td>
+                                                <th>Pallets Inspeccionados</th>
+                                                <td id="acta-folio" style="word-break: break-all; font-family:var(--font-mono); font-size:0.75rem;">--</td>
                                             </tr>
                                             <tr>
                                                 <th>Packing List</th>
                                                 <td id="acta-plist">--</td>
                                             </tr>
                                             <tr>
-                                                <th>Cajas Totales</th>
+                                                <th>Cajas Totales Lote</th>
                                                 <td id="acta-tot-cajas">--</td>
                                             </tr>
                                             <tr>
                                                 <th>Muestra Requerida</th>
-                                                <td>4 Cajas Físicas Mínimo</td>
+                                                <td>Mínimo 4 Cajas por Pallet</td>
                                             </tr>
                                             <tr>
                                                 <th>Muestra Auditada</th>
@@ -888,15 +618,15 @@
                     </div>
                 </section>
 
-                <!-- VIEW 7: HISTORIAL DE INSPECCIONES -->
-                <section class="step-view" id="view-step-7">
+                <!-- VIEW 5: HISTORIAL DE INSPECCIONES -->
+                <section class="step-view" id="view-step-5">
                     <div class="card p-lg">
                         <div class="card-header">
                             <span class="badge badge-primary">HISTORIAL</span>
                             <h2>Registro de Inspecciones Fitosanitarias SAG</h2>
                         </div>
                         <p class="description-text">
-                            Historial local de lotes procesados y certificados emitidos en esta estación de trabajo. Las inspecciones quedan guardadas en la memoria del navegador (LocalStorage) para su consulta y auditoría rápida.
+                            Historial local de lotes procesados y certificados emitidos en esta estación de trabajo. Las inspecciones quedan guardadas en la memoria del navegador (LocalStorage) para su consulta rápida.
                         </p>
 
                         <div class="history-table-container mt-lg" style="overflow-x: auto; background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1rem;">
@@ -904,7 +634,7 @@
                                 <thead>
                                     <tr style="border-bottom: 2px solid var(--color-border);">
                                         <th style="padding:10px;">Fecha/Hora</th>
-                                        <th style="padding:10px;">Folio Pallet</th>
+                                        <th style="padding:10px;">Pallets Inspeccionados</th>
                                         <th style="padding:10px;">Lote ERP</th>
                                         <th style="padding:10px;">Inspector</th>
                                         <th style="padding:10px;">Cajas Auditadas</th>
